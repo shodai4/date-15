@@ -323,18 +323,9 @@
         resultEl.textContent = `「${finalPlan.text}」`;
         authorEl.textContent = `by ${finalPlan.author || '匿名希望'}`;
         authorEl.classList.remove('hidden');
-        charsCountEl.classList.remove('hidden');
         shareBtn.classList.remove('hidden');
         spinBtn.disabled = false;
         state.isSpinning = false;
-
-        if (typeof confetti === 'function') {
-          confetti({
-            particleCount: 80,
-            spread: 80,
-            origin: { y: 0.4 }
-          });
-        }
       }
     }, interval);
   }

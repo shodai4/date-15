@@ -11,8 +11,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&family=Shippori+Mincho:wght@500;700&display=swap" rel="stylesheet">
-  <!-- Canvas Confetti -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
   <style>
     body {
@@ -78,7 +76,7 @@
 <body class="min-h-screen flex flex-col justify-between selection:bg-rose-100 selection:text-rose-900">
 
   <!-- ヘッダー（スマホ改行崩れ完全防止） -->
-  <header class="w-full bg-white/95 backdrop-blur-md border-b border-[#E8DDD5] sticky top-0 z-30 px-3 py-2.5 shadow-xs">
+  <header class="w-full bg-white/95 backdrop-blur-md border-b border-[#E8DDD5] sticky top-0 z-30 px-3 py-2 shadow-xs">
     <div class="max-w-md mx-auto flex items-center justify-between">
       <div class="flex items-center space-x-2 min-w-0">
         <span class="text-xl shrink-0">☕</span>
@@ -98,28 +96,60 @@
   </header>
 
   <!-- メインコンテンツ -->
-  <main class="max-w-md w-full mx-auto px-3.5 py-4 flex-1 space-y-4">
+  <main class="max-w-md w-full mx-auto px-3.5 py-3.5 flex-1 space-y-3.5">
 
-    <!-- ① セクション1: 15文字ピッタリ投稿フォーム（最上部に配置！） -->
-    <section class="bg-white rounded-2xl p-4 border border-[#E8DDD5] shadow-xs space-y-3">
+    <!-- ① 今日のデートルーレット（一番上に配置＆高さをスリム化！） -->
+    <section class="bg-white rounded-2xl p-3 sm:p-3.5 border border-[#E8DDD5] shadow-xs relative overflow-hidden">
+      <div class="flex items-center justify-between mb-1.5">
+        <div class="flex items-center space-x-1.5">
+          <span class="text-sm">💖</span>
+          <h2 class="text-xs font-bold text-[#8C766B] tracking-wider uppercase whitespace-nowrap">今日のデートルーレット</h2>
+        </div>
+        <span class="text-[9px] text-[#A89488] bg-[#FAF5F2] px-2 py-0.5 rounded-full border border-[#E8DDD5] whitespace-nowrap">
+          全 <span id="rouletteTotalCount" class="font-bold text-[#2D231E]">10</span> プラン
+        </span>
+      </div>
+
+      <!-- ルーレット表示パネル（高さをキュッとスリムに） -->
+      <div class="bg-[#FAF5F2] rounded-xl px-3 py-2.5 border border-dashed border-[#D8C8BF] text-center min-h-[64px] flex flex-col items-center justify-center relative">
+        <div id="rouletteResult" class="text-xs sm:text-sm font-bold font-mincho text-[#2D231E] leading-snug transition-all duration-200">
+          「今日のふたり、何して遊ぶ？」
+        </div>
+        <div id="rouletteAuthor" class="text-[9px] text-[#8C766B] mt-0.5 hidden whitespace-nowrap"></div>
+      </div>
+
+      <!-- ルーレット起動ボタン -->
+      <div class="mt-2 flex gap-1.5">
+        <button id="btnSpinRoulette" class="flex-1 bg-gradient-to-r from-[#E26D6D] to-[#D65D5D] hover:opacity-95 active:scale-[0.98] text-white font-bold py-2 px-3 rounded-xl shadow-xs transition flex items-center justify-center space-x-1 text-xs tracking-wider whitespace-nowrap">
+          <span>🎲</span>
+          <span>今日のデートを決める！</span>
+        </button>
+        <button id="btnShareRoulette" class="hidden bg-[#FAF5F2] hover:bg-[#EFE5DF] text-[#6E564B] border border-[#D8C8BF] font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center space-x-1 transition whitespace-nowrap">
+          <span>𝕏</span>
+          <span>シェア</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ② 15文字ピッタリ投稿フォーム -->
+    <section class="bg-white rounded-2xl p-3.5 border border-[#E8DDD5] shadow-xs space-y-2.5">
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-1.5 min-w-0">
-          <span class="text-base shrink-0">💌</span>
+          <span class="text-sm shrink-0">💌</span>
           <h2 class="text-xs sm:text-sm font-bold text-[#2D231E] leading-tight">
             <span class="inline-block whitespace-nowrap">ふたりの理想のデートを</span><span class="inline-block whitespace-nowrap">15文字で</span>
           </h2>
         </div>
-        <!-- 文字数バッジ（縦割れ完全防止） -->
         <span id="charCountBadge" class="shrink-0 whitespace-nowrap text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FAF5F2] text-[#8C766B] border border-[#D8C8BF]">
           <span id="currentCharCount">0</span> / 15文字
         </span>
       </div>
 
-      <!-- 15文字原稿用紙マス目プレビュー（22px×22pxで小さく中央揃え） -->
+      <!-- 15文字原稿用紙マス目プレビュー -->
       <div class="space-y-1">
         <div class="flex justify-center">
           <div class="grid grid-cols-5 gap-1" id="charGrid">
-            <!-- JSで15マス生成 -->
+            <!-- JSで15マス生成 (22x22px) -->
           </div>
         </div>
         <div class="text-center">
@@ -160,7 +190,7 @@
         <button 
           id="btnSubmitPlan" 
           disabled 
-          class="w-full py-2.5 px-4 rounded-xl font-bold text-xs text-white bg-[#D8C8BF] cursor-not-allowed transition flex items-center justify-center space-x-1.5 shadow-xs"
+          class="w-full py-2 px-4 rounded-xl font-bold text-xs text-white bg-[#D8C8BF] cursor-not-allowed transition flex items-center justify-center space-x-1.5 shadow-xs"
         >
           <span>📮</span>
           <span>15文字ピッタリでデートを投稿</span>
@@ -168,56 +198,18 @@
       </div>
     </section>
 
-    <!-- ② セクション2: 今日のデートルーレット（入力と一覧の間！） -->
-    <section class="bg-white rounded-2xl p-4 border border-[#E8DDD5] shadow-xs relative overflow-hidden">
-      <div class="absolute -top-8 -right-8 w-24 h-24 bg-rose-100 rounded-full blur-xl pointer-events-none opacity-60"></div>
-      
-      <div class="flex items-center justify-between mb-2">
+    <!-- ③ みんなのデートプラン & いいねランキング -->
+    <section class="space-y-2">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
         <div class="flex items-center space-x-1.5">
-          <span class="text-base">💖</span>
-          <h2 class="text-xs font-bold text-[#8C766B] tracking-wider uppercase whitespace-nowrap">今日のデートルーレット</h2>
-        </div>
-        <span class="text-[9.5px] text-[#A89488] bg-[#FAF5F2] px-2 py-0.5 rounded-full border border-[#E8DDD5] whitespace-nowrap">
-          全 <span id="rouletteTotalCount" class="font-bold text-[#2D231E]">10</span> プラン
-        </span>
-      </div>
-
-      <!-- ルーレット表示パネル -->
-      <div class="bg-[#FAF5F2] rounded-xl p-3.5 border-2 border-dashed border-[#D8C8BF] text-center min-h-[90px] flex flex-col items-center justify-center relative">
-        <div id="rouletteResult" class="text-sm sm:text-base font-bold font-mincho text-[#2D231E] leading-relaxed transition-all duration-200">
-          「今日のふたり、何して遊ぶ？」
-        </div>
-        <div id="rouletteAuthor" class="text-[9.5px] text-[#8C766B] mt-1 hidden whitespace-nowrap"></div>
-        <div id="rouletteCharsCount" class="text-[9px] text-rose-500 font-bold mt-0.5 hidden whitespace-nowrap">
-          ✨ 15文字ピッタリのデート ✨
-        </div>
-      </div>
-
-      <!-- ルーレット起動ボタン -->
-      <div class="mt-2.5 flex gap-2">
-        <button id="btnSpinRoulette" class="flex-1 bg-gradient-to-r from-[#E26D6D] to-[#D65D5D] hover:opacity-95 active:scale-[0.98] text-white font-bold py-2.5 px-4 rounded-xl shadow-md transition flex items-center justify-center space-x-1.5 text-xs tracking-wider whitespace-nowrap">
-          <span>🎲</span>
-          <span>今日のデートを決める！</span>
-        </button>
-        <button id="btnShareRoulette" class="hidden bg-[#FAF5F2] hover:bg-[#EFE5DF] text-[#6E564B] border border-[#D8C8BF] font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-1 transition whitespace-nowrap">
-          <span>𝕏</span>
-          <span>シェア</span>
-        </button>
-      </div>
-    </section>
-
-    <!-- ③ セクション3: みんなのデートプラン & いいねランキング -->
-    <section class="space-y-2.5">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <div class="flex items-center space-x-1.5">
-          <span class="text-base">🏆</span>
+          <span class="text-sm">🏆</span>
           <h2 class="text-xs sm:text-sm font-bold text-[#2D231E] tracking-tight whitespace-nowrap">
             デートプラン一覧
           </h2>
         </div>
 
-        <!-- ソート切り替えタブ（スマホで絶対に縦割れしない均等グリッド） -->
-        <div class="grid grid-cols-3 gap-1 bg-[#EFE5DF] p-1 rounded-xl text-[11px] w-full sm:w-auto">
+        <!-- ソート切り替えタブ -->
+        <div class="grid grid-cols-3 gap-1 bg-[#EFE5DF] p-1 rounded-xl text-[10.5px] w-full sm:w-auto">
           <button id="sortLikes" class="py-1 rounded-lg font-bold bg-white text-[#2D231E] shadow-xs text-center whitespace-nowrap transition">
             👍 人気順
           </button>
@@ -238,16 +230,16 @@
 
   </main>
 
-  <!-- 権利帰属注記（指示通り一番下に配置） -->
-  <aside class="max-w-md mx-auto px-4 py-3 text-center">
+  <!-- 権利帰属注記（一番下に小さく配置） -->
+  <aside class="max-w-md mx-auto px-4 py-2.5 text-center">
     <p class="text-[9px] text-[#A89488] leading-relaxed">
       ※ご投稿いただいたデートプランの著作権・利用権は企画者（翔大）に帰属し、将来の出版物や作品制作、Webメディア等に無償で掲載・活用させていただく場合がございます。投稿をもってこれに同意したものとみなします。
     </p>
   </aside>
 
   <!-- フッター -->
-  <footer class="w-full bg-[#FAF5F2] border-t border-[#E8DDD5] py-5 px-4 text-center text-xs text-[#8C766B] space-y-1.5">
-    <div class="flex justify-center items-center space-x-3 text-[10.5px]">
+  <footer class="w-full bg-[#FAF5F2] border-t border-[#E8DDD5] py-4 px-4 text-center text-xs text-[#8C766B] space-y-1">
+    <div class="flex justify-center items-center space-x-3 text-[10px]">
       <span class="font-bold text-[#5C453B]">企画・制作: 翔大（Shodai）</span>
       <span>·</span>
       <a href="https://thebase.com" target="_blank" rel="noopener noreferrer" class="hover:text-[#2D231E] underline">BASEショップ</a>
