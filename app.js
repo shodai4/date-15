@@ -295,15 +295,13 @@
 
     const resultEl = document.getElementById('rouletteResult');
     const authorEl = document.getElementById('rouletteAuthor');
-    const charsCountEl = document.getElementById('rouletteCharsCount');
     const spinBtn = document.getElementById('btnSpinRoulette');
     const shareBtn = document.getElementById('btnShareRoulette');
 
     resultEl.classList.add('slot-rolling', 'text-rose-500');
     spinBtn.disabled = true;
-    charsCountEl.classList.add('hidden');
-    authorEl.classList.add('hidden');
-    shareBtn.classList.add('hidden');
+    if (authorEl) authorEl.classList.add('hidden');
+    if (shareBtn) shareBtn.classList.add('hidden');
 
     let rollCount = 0;
     const maxRolls = 20;
@@ -321,9 +319,11 @@
 
         resultEl.classList.remove('slot-rolling', 'text-rose-500');
         resultEl.textContent = `「${finalPlan.text}」`;
-        authorEl.textContent = `by ${finalPlan.author || '匿名希望'}`;
-        authorEl.classList.remove('hidden');
-        shareBtn.classList.remove('hidden');
+        if (authorEl) {
+          authorEl.textContent = `by ${finalPlan.author || '匿名希望'}`;
+          authorEl.classList.remove('hidden');
+        }
+        if (shareBtn) shareBtn.classList.remove('hidden');
         spinBtn.disabled = false;
         state.isSpinning = false;
       }
