@@ -6,19 +6,19 @@
   'use strict';
 
   // ==========================================
-  // 1. 初期プリセット10選（初期値: 匿名希望）
+  // 1. 初期プリセット10選（初期値: 匿名希望、いいね数: 1）
   // ==========================================
   const INITIAL_PLANS = [
-    { id: 1, text: '散歩中の可愛い犬を数えて歩こう', author: '匿名希望', likes: 142, createdAt: 1731248000000 },
-    { id: 2, text: '古本屋で五百円分選び合ってみる', author: '匿名希望', likes: 218, createdAt: 1731248100000 },
-    { id: 3, text: '昔ながらの駄菓子屋で三百円豪遊', author: '匿名希望', likes: 175, createdAt: 1731248200000 },
-    { id: 4, text: 'レンタルビデオでジャケ買い勝負', author: '匿名希望', likes: 98, createdAt: 1731248300000 },
-    { id: 5, text: 'ガチャガチャを二人でフルコンプ', author: '匿名希望', likes: 164, createdAt: 1731248400000 },
-    { id: 6, text: '深夜のドライブで静かな海を見に', author: '匿名希望', likes: 289, createdAt: 1731248500000 },
-    { id: 7, text: 'デパ地下試食コーナー全種類制覇', author: '匿名希望', likes: 112, createdAt: 1731248600000 },
-    { id: 8, text: 'ボードゲームカフェで真剣勝負す', author: '匿名希望', likes: 134, createdAt: 1731248700000 },
-    { id: 9, text: '見知らぬ駅でふらり途中下車する', author: '匿名希望', likes: 203, createdAt: 1731248800000 },
-    { id: 10, text: '早朝の市場で熱い朝ラーメン食う', author: '匿名希望', likes: 251, createdAt: 1731248900000 }
+    { id: 1, text: '散歩中の可愛い犬を数えて歩こう', author: '匿名希望', likes: 1, createdAt: 1731248000000 },
+    { id: 2, text: '古本屋で五百円分選び合ってみる', author: '匿名希望', likes: 1, createdAt: 1731248100000 },
+    { id: 3, text: '昔ながらの駄菓子屋で三百円豪遊', author: '匿名希望', likes: 1, createdAt: 1731248200000 },
+    { id: 4, text: 'レンタルビデオでジャケ買い勝負', author: '匿名希望', likes: 1, createdAt: 1731248300000 },
+    { id: 5, text: 'ガチャガチャを二人でフルコンプ', author: '匿名希望', likes: 1, createdAt: 1731248400000 },
+    { id: 6, text: '深夜のドライブで静かな海を見に', author: '匿名希望', likes: 1, createdAt: 1731248500000 },
+    { id: 7, text: 'デパ地下試食コーナー全種類制覇', author: '匿名希望', likes: 1, createdAt: 1731248600000 },
+    { id: 8, text: 'ボードゲームカフェで真剣勝負す', author: '匿名希望', likes: 1, createdAt: 1731248700000 },
+    { id: 9, text: '見知らぬ駅でふらり途中下車する', author: '匿名希望', likes: 1, createdAt: 1731248800000 },
+    { id: 10, text: '早朝の市場で熱い朝ラーメン食う', author: '匿名希望', likes: 1, createdAt: 1731248900000 }
   ];
 
   // ==========================================
@@ -76,7 +76,7 @@
               id: r.id,
               text: r.text,
               author: r.author || '匿名希望',
-              likes: r.likes || 0,
+              likes: r.likes !== undefined ? r.likes : 1,
               createdAt: new Date(r.created_at).getTime()
             }));
             state.isOnlineDB = true;
@@ -182,7 +182,7 @@
   }
 
   // ==========================================
-  // 5. 投稿処理 (デフォルト: 匿名希望)
+  // 5. 投稿処理
   // ==========================================
   async function submitPlan() {
     const input = document.getElementById('planInput');
