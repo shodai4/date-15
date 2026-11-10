@@ -6,19 +6,19 @@
   'use strict';
 
   // ==========================================
-  // 1. 初期プリセット10選（翔大さん考案・ピッタリ15文字版）
+  // 1. 初期プリセット10選（初期値: 匿名希望）
   // ==========================================
   const INITIAL_PLANS = [
-    { id: 1, text: '散歩中の可愛い犬を数えて歩こう', author: '翔大', likes: 142, createdAt: 1731248000000 },
-    { id: 2, text: '古本屋で五百円分選び合ってみる', author: '翔大', likes: 218, createdAt: 1731248100000 },
-    { id: 3, text: '昔ながらの駄菓子屋で三百円豪遊', author: '翔大', likes: 175, createdAt: 1731248200000 },
-    { id: 4, text: 'レンタルビデオでジャケ買い勝負', author: '翔大', likes: 98, createdAt: 1731248300000 },
-    { id: 5, text: 'ガチャガチャを二人でフルコンプ', author: '翔大', likes: 164, createdAt: 1731248400000 },
-    { id: 6, text: '深夜のドライブで静かな海を見に', author: '翔大', likes: 289, createdAt: 1731248500000 },
-    { id: 7, text: 'デパ地下試食コーナー全種類制覇', author: '翔大', likes: 112, createdAt: 1731248600000 },
-    { id: 8, text: 'ボードゲームカフェで真剣勝負す', author: '翔大', likes: 134, createdAt: 1731248700000 },
-    { id: 9, text: '見知らぬ駅でふらり途中下車する', author: '翔大', likes: 203, createdAt: 1731248800000 },
-    { id: 10, text: '早朝の市場で熱い朝ラーメン食う', author: '翔大', likes: 251, createdAt: 1731248900000 }
+    { id: 1, text: '散歩中の可愛い犬を数えて歩こう', author: '匿名希望', likes: 142, createdAt: 1731248000000 },
+    { id: 2, text: '古本屋で五百円分選び合ってみる', author: '匿名希望', likes: 218, createdAt: 1731248100000 },
+    { id: 3, text: '昔ながらの駄菓子屋で三百円豪遊', author: '匿名希望', likes: 175, createdAt: 1731248200000 },
+    { id: 4, text: 'レンタルビデオでジャケ買い勝負', author: '匿名希望', likes: 98, createdAt: 1731248300000 },
+    { id: 5, text: 'ガチャガチャを二人でフルコンプ', author: '匿名希望', likes: 164, createdAt: 1731248400000 },
+    { id: 6, text: '深夜のドライブで静かな海を見に', author: '匿名希望', likes: 289, createdAt: 1731248500000 },
+    { id: 7, text: 'デパ地下試食コーナー全種類制覇', author: '匿名希望', likes: 112, createdAt: 1731248600000 },
+    { id: 8, text: 'ボードゲームカフェで真剣勝負す', author: '匿名希望', likes: 134, createdAt: 1731248700000 },
+    { id: 9, text: '見知らぬ駅でふらり途中下車する', author: '匿名希望', likes: 203, createdAt: 1731248800000 },
+    { id: 10, text: '早朝の市場で熱い朝ラーメン食う', author: '匿名希望', likes: 251, createdAt: 1731248900000 }
   ];
 
   // ==========================================
@@ -75,7 +75,7 @@
             state.plans = remoteData.map(r => ({
               id: r.id,
               text: r.text,
-              author: r.author || '匿名さん',
+              author: r.author || '匿名希望',
               likes: r.likes || 0,
               createdAt: new Date(r.created_at).getTime()
             }));
@@ -182,7 +182,7 @@
   }
 
   // ==========================================
-  // 5. 投稿処理
+  // 5. 投稿処理 (デフォルト: 匿名希望)
   // ==========================================
   async function submitPlan() {
     const input = document.getElementById('planInput');
@@ -195,7 +195,7 @@
       return;
     }
 
-    const author = (authorInput && authorInput.value.trim()) ? authorInput.value.trim() : '匿名さん';
+    const author = (authorInput && authorInput.value.trim()) ? authorInput.value.trim() : '匿名希望';
     try {
       localStorage.setItem(STORAGE_KEY_AUTHOR, author);
     } catch (e) {}
@@ -321,10 +321,8 @@
 
         resultEl.classList.remove('slot-rolling', 'text-rose-500');
         resultEl.textContent = `「${finalPlan.text}」`;
-        if (finalPlan.author) {
-          authorEl.textContent = `by ${finalPlan.author}`;
-          authorEl.classList.remove('hidden');
-        }
+        authorEl.textContent = `by ${finalPlan.author || '匿名希望'}`;
+        authorEl.classList.remove('hidden');
         charsCountEl.classList.remove('hidden');
         shareBtn.classList.remove('hidden');
         spinBtn.disabled = false;
@@ -343,7 +341,7 @@
 
   function shareResultToX() {
     if (!state.selectedPlan) return;
-    const authorText = state.selectedPlan.author ? ` (by ${state.selectedPlan.author})` : '';
+    const authorText = ` (by ${state.selectedPlan.author || '匿名希望'})`;
     const text = `今日のふたりのデートは【${state.selectedPlan.text}】${authorText}に決まりました！💖✨\n\nたった15文字で綴る、愛おしいデート。\n#理想のデート15文字 #デートプラン\n`;
     const url = window.location.href;
     const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
@@ -388,14 +386,13 @@
           <div class="flex items-center space-x-2 flex-1 min-w-0 pr-2">
             ${rankBadge}
             <div class="min-w-0 flex-1">
-              <!-- スマホ幅320pxでも1行に収まるフォント設計 -->
               <div class="text-xs sm:text-sm font-bold font-mincho text-[#2D231E] tracking-tight truncate whitespace-nowrap">
                 ${plan.text}
               </div>
               <div class="text-[9px] text-[#8C766B] flex items-center space-x-1 mt-0.5 whitespace-nowrap">
                 <span class="text-rose-500 font-bold">15文字</span>
                 <span>·</span>
-                <span class="truncate">by ${plan.author || '匿名さん'}</span>
+                <span class="truncate">by ${plan.author || '匿名希望'}</span>
               </div>
             </div>
           </div>
