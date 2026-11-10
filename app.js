@@ -1,5 +1,5 @@
 /**
- * 理想のデートプランを15文字でどうぞ。 - アプリスクリプト
+ * 理想のデートプランを15文字でどうぞ。 - アプリスクリプト (改修版)
  */
 
 (() => {
@@ -9,16 +9,16 @@
   // 1. 初期プリセット10選（翔大さん考案・ピッタリ15文字版）
   // ==========================================
   const INITIAL_PLANS = [
-    { id: 1, text: '散歩中の可愛い犬を数えて歩こう', likes: 142, createdAt: 1731248000000 },
-    { id: 2, text: '古本屋で五百円分選び合ってみる', likes: 218, createdAt: 1731248100000 },
-    { id: 3, text: '昔ながらの駄菓子屋で三百円豪遊', likes: 175, createdAt: 1731248200000 },
-    { id: 4, text: 'レンタルビデオでジャケ買い勝負', likes: 98, createdAt: 1731248300000 },
-    { id: 5, text: 'ガチャガチャを二人でフルコンプ', likes: 164, createdAt: 1731248400000 },
-    { id: 6, text: '深夜のドライブで静かな海を見に', likes: 289, createdAt: 1731248500000 },
-    { id: 7, text: 'デパ地下試食コーナー全種類制覇', likes: 112, createdAt: 1731248600000 },
-    { id: 8, text: 'ボードゲームカフェで真剣勝負す', likes: 134, createdAt: 1731248700000 },
-    { id: 9, text: '見知らぬ駅でふらり途中下車する', likes: 203, createdAt: 1731248800000 },
-    { id: 10, text: '早朝の市場で熱い朝ラーメン食う', likes: 251, createdAt: 1731248900000 }
+    { id: 1, text: '散歩中の可愛い犬を数えて歩こう', author: '翔大', likes: 142, createdAt: 1731248000000 },
+    { id: 2, text: '古本屋で五百円分選び合ってみる', author: '翔大', likes: 218, createdAt: 1731248100000 },
+    { id: 3, text: '昔ながらの駄菓子屋で三百円豪遊', author: '翔大', likes: 175, createdAt: 1731248200000 },
+    { id: 4, text: 'レンタルビデオでジャケ買い勝負', author: '翔大', likes: 98, createdAt: 1731248300000 },
+    { id: 5, text: 'ガチャガチャを二人でフルコンプ', author: '翔大', likes: 164, createdAt: 1731248400000 },
+    { id: 6, text: '深夜のドライブで静かな海を見に', author: '翔大', likes: 289, createdAt: 1731248500000 },
+    { id: 7, text: 'デパ地下試食コーナー全種類制覇', author: '翔大', likes: 112, createdAt: 1731248600000 },
+    { id: 8, text: 'ボードゲームカフェで真剣勝負す', author: '翔大', likes: 134, createdAt: 1731248700000 },
+    { id: 9, text: '見知らぬ駅でふらり途中下車する', author: '翔大', likes: 203, createdAt: 1731248800000 },
+    { id: 10, text: '早朝の市場で熱い朝ラーメン食う', author: '翔大', likes: 251, createdAt: 1731248900000 }
   ];
 
   // ==========================================
@@ -35,8 +35,8 @@
 
   const STORAGE_KEY_PLANS = 'date15_custom_plans';
   const STORAGE_KEY_VOTES = 'date15_voted_ids';
+  const STORAGE_KEY_AUTHOR = 'date15_last_author';
 
-  // 文字列の文字数を正確にカウント（サロゲートペア対応）
   function countChars(str) {
     return [...str].length;
   }
@@ -45,7 +45,6 @@
   // 3. データ読込 & Supabase連携
   // ==========================================
   async function loadData() {
-    // 投票済みIDの読込
     try {
       const savedVotes = localStorage.getItem(STORAGE_KEY_VOTES);
       if (savedVotes) {
@@ -53,7 +52,15 @@
       }
     } catch (e) {}
 
-    // Supabase 設定チェック
+    // 前回使ったユーザーネームの復元
+    try {
+      const lastAuthor = localStorage.getItem(STORAGE_KEY_AUTHOR);
+      const authorInput = document.getElementById('authorInput');
+      if (lastAuthor && authorInput) {
+        authorInput.value = lastAuthor;
+      }
+    } catch (e) {}
+
     const cfg = window.DATE_CONFIG || {};
     if (cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY) {
       try {
@@ -69,6 +76,7 @@
             state.plans = remoteData.map(r => ({
               id: r.id,
               text: r.text,
+              author: r.author || '匿名さん',
               likes: r.likes || 0,
               createdAt: new Date(r.created_at).getTime()
             }));
@@ -83,7 +91,6 @@
       }
     }
 
-    // ローカルストレージからの読込フォールバック
     try {
       const customPlans = localStorage.getItem(STORAGE_KEY_PLANS);
       const userList = customPlans ? JSON.parse(customPlans) : [];
@@ -112,7 +119,7 @@
   }
 
   // ==========================================
-  // 4. 15文字原稿用紙グリッドの生成とリアルタイム検証
+  // 4. 15文字原稿用紙グリッド (コンパクト版)
   // ==========================================
   function initCharGrid() {
     const grid = document.getElementById('charGrid');
@@ -120,7 +127,7 @@
     grid.innerHTML = '';
     for (let i = 0; i < 15; i++) {
       const cell = document.createElement('div');
-      cell.className = 'char-cell rounded-lg text-sm md:text-base';
+      cell.className = 'char-cell';
       cell.id = `cell-${i}`;
       grid.appendChild(cell);
     }
@@ -139,44 +146,39 @@
     if (countEl) countEl.textContent = len;
     if (clearBtn) clearBtn.classList.toggle('hidden', len === 0);
 
-    // グリッドセルの描画
     for (let i = 0; i < 15; i++) {
       const cell = document.getElementById(`cell-${i}`);
       if (!cell) continue;
 
       if (i < len) {
         cell.textContent = chars[i];
-        cell.className = `char-cell rounded-lg text-sm md:text-base filled ${len === 15 ? 'perfect' : ''}`;
+        cell.className = `char-cell filled ${len === 15 ? 'perfect' : ''}`;
       } else {
         cell.textContent = '';
-        cell.className = 'char-cell rounded-lg text-sm md:text-base';
+        cell.className = 'char-cell';
       }
     }
 
-    // 判定演出
     if (len === 15) {
-      // 15文字ピッタリ！
-      countBadge.className = 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-300 animate-pulse';
+      countBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-300 animate-pulse';
       msgEl.textContent = '✨ 15文字ピッタリ！このまま投稿できます！';
-      msgEl.className = 'text-[11px] font-bold text-rose-600 transition-all';
+      msgEl.className = 'text-[9.5px] font-bold text-rose-600 transition-all';
       submitBtn.disabled = false;
-      submitBtn.className = 'w-full py-3 px-6 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-[#E07A7A] to-[#D46B6B] hover:opacity-95 active:scale-[0.99] shadow-md transition flex items-center justify-center space-x-2 cursor-pointer';
+      submitBtn.className = 'w-full py-2.5 px-4 rounded-xl font-bold text-xs text-white bg-gradient-to-r from-[#E26D6D] to-[#D65D5D] hover:opacity-95 active:scale-[0.99] shadow-md transition flex items-center justify-center space-x-1.5 cursor-pointer';
     } else if (len > 15) {
-      // 文字数オーバー
       const over = len - 15;
-      countBadge.className = 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-rose-950 text-rose-200 border border-rose-700';
+      countBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-950 text-rose-200 border border-rose-700';
       msgEl.textContent = `⚠️ ${over}文字オーバーです（15文字丁度に削ってね）`;
-      msgEl.className = 'text-[11px] font-bold text-rose-500 transition-all';
+      msgEl.className = 'text-[9.5px] font-bold text-rose-500 transition-all';
       submitBtn.disabled = true;
-      submitBtn.className = 'w-full py-3 px-6 rounded-xl font-bold text-sm text-white bg-[#D6C7BE] cursor-not-allowed transition flex items-center justify-center space-x-2 shadow-xs';
+      submitBtn.className = 'w-full py-2.5 px-4 rounded-xl font-bold text-xs text-white bg-[#D8C8BF] cursor-not-allowed transition flex items-center justify-center space-x-1.5 shadow-xs';
     } else {
-      // 不足
       const remain = 15 - len;
-      countBadge.className = 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#FAF7F5] text-[#8C7A70] border border-[#D6C7BE]';
+      countBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FAF5F2] text-[#8C766B] border border-[#D8C8BF]';
       msgEl.textContent = len === 0 ? 'ピッタリ15文字になると投稿できます' : `あと ${remain} 文字でピッタリです`;
-      msgEl.className = 'text-[11px] text-[#A8988F] transition-all';
+      msgEl.className = 'text-[9.5px] text-[#A89488] transition-all';
       submitBtn.disabled = true;
-      submitBtn.className = 'w-full py-3 px-6 rounded-xl font-bold text-sm text-white bg-[#D6C7BE] cursor-not-allowed transition flex items-center justify-center space-x-2 shadow-xs';
+      submitBtn.className = 'w-full py-2.5 px-4 rounded-xl font-bold text-xs text-white bg-[#D8C8BF] cursor-not-allowed transition flex items-center justify-center space-x-1.5 shadow-xs';
     }
   }
 
@@ -185,6 +187,7 @@
   // ==========================================
   async function submitPlan() {
     const input = document.getElementById('planInput');
+    const authorInput = document.getElementById('authorInput');
     if (!input) return;
 
     const rawText = input.value.trim();
@@ -193,16 +196,21 @@
       return;
     }
 
+    const author = (authorInput && authorInput.value.trim()) ? authorInput.value.trim() : '匿名さん';
+    try {
+      localStorage.setItem(STORAGE_KEY_AUTHOR, author);
+    } catch (e) {}
+
     const cfg = window.DATE_CONFIG || {};
     const newId = Date.now();
     const newPlan = {
       id: newId,
       text: rawText,
+      author: author,
       likes: 1,
       createdAt: Date.now()
     };
 
-    // Supabase 送信
     if (state.isOnlineDB && cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY) {
       try {
         await fetch(`${cfg.SUPABASE_URL}/rest/v1/${cfg.TABLE_NAME}`, {
@@ -213,7 +221,7 @@
             'Authorization': `Bearer ${cfg.SUPABASE_ANON_KEY}`,
             'Prefer': 'return=representation'
           },
-          body: JSON.stringify({ text: rawText, likes: 1 })
+          body: JSON.stringify({ text: rawText, author: author, likes: 1 })
         });
       } catch (e) {
         console.warn('Supabase post failed, saving locally:', e);
@@ -226,7 +234,6 @@
     state.votedIds.add(newPlan.id);
     saveLocalVotes();
 
-    // 紙吹雪演出
     if (typeof confetti === 'function') {
       confetti({
         particleCount: 50,
@@ -235,13 +242,12 @@
       });
     }
 
-    // フォーム初期化
     input.value = '';
     updateCharGrid('');
     renderPlans();
     updateRouletteCount();
 
-    alert('素敵な15文字のデートプランを投稿しました！✨');
+    alert('素敵なデートプランを投稿しました！💕');
   }
 
   // ==========================================
@@ -263,7 +269,6 @@
     }
     saveLocalVotes();
 
-    // Supabase RPC または 直接更新
     const cfg = window.DATE_CONFIG || {};
     if (state.isOnlineDB && cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY) {
       try {
@@ -290,6 +295,7 @@
     state.isSpinning = true;
 
     const resultEl = document.getElementById('rouletteResult');
+    const authorEl = document.getElementById('rouletteAuthor');
     const charsCountEl = document.getElementById('rouletteCharsCount');
     const spinBtn = document.getElementById('btnSpinRoulette');
     const shareBtn = document.getElementById('btnShareRoulette');
@@ -297,10 +303,11 @@
     resultEl.classList.add('slot-rolling', 'text-rose-500');
     spinBtn.disabled = true;
     charsCountEl.classList.add('hidden');
+    authorEl.classList.add('hidden');
     shareBtn.classList.add('hidden');
 
     let rollCount = 0;
-    const maxRolls = 22; // 約1.8秒回る
+    const maxRolls = 20;
     const interval = 80;
 
     const timer = setInterval(() => {
@@ -310,18 +317,20 @@
 
       if (rollCount >= maxRolls) {
         clearInterval(timer);
-        // 最終決定
         const finalPlan = state.plans[Math.floor(Math.random() * state.plans.length)];
         state.selectedPlan = finalPlan;
 
         resultEl.classList.remove('slot-rolling', 'text-rose-500');
         resultEl.textContent = `「${finalPlan.text}」`;
+        if (finalPlan.author) {
+          authorEl.textContent = `by ${finalPlan.author}`;
+          authorEl.classList.remove('hidden');
+        }
         charsCountEl.classList.remove('hidden');
         shareBtn.classList.remove('hidden');
         spinBtn.disabled = false;
         state.isSpinning = false;
 
-        // 紙吹雪
         if (typeof confetti === 'function') {
           confetti({
             particleCount: 80,
@@ -335,7 +344,8 @@
 
   function shareResultToX() {
     if (!state.selectedPlan) return;
-    const text = `今日の理想のデートは【${state.selectedPlan.text}】に決まりました！☕✨\n\nたった15文字で綴る、愛おしい日常。\n#理想のデート15文字 #デートプラン\n`;
+    const authorText = state.selectedPlan.author ? ` (by ${state.selectedPlan.author})` : '';
+    const text = `今日のふたりのデートは【${state.selectedPlan.text}】${authorText}に決まりました！💖✨\n\nたった15文字で綴る、愛おしいデート。\n#理想のデート15文字 #デートプラン\n`;
     const url = window.location.href;
     const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
     window.open(xUrl, '_blank');
@@ -363,7 +373,7 @@
     }
 
     if (sorted.length === 0) {
-      container.innerHTML = '<div class="text-center py-10 text-xs text-[#A8988F]">まだ投稿がありません。最初の15文字を投稿してみよう！</div>';
+      container.innerHTML = '<div class="text-center py-8 text-xs text-[#A89488]">まだ投稿がありません。最初の15文字を投稿してみよう！</div>';
       return;
     }
 
@@ -371,19 +381,22 @@
       const isVoted = state.votedIds.has(plan.id);
       const isTop3 = state.currentSort === 'likes' && index < 3;
       const rankBadge = isTop3 
-        ? `<span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${index === 0 ? 'bg-amber-400 text-amber-950' : index === 1 ? 'bg-slate-300 text-slate-800' : 'bg-amber-600 text-amber-50'}">${index + 1}</span>`
-        : `<span class="w-5 h-5 flex items-center justify-center text-[10px] text-[#A8988F] font-bold">${index + 1}</span>`;
+        ? `<span class="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold ${index === 0 ? 'bg-amber-400 text-amber-950' : index === 1 ? 'bg-slate-300 text-slate-800' : 'bg-amber-600 text-amber-50'}">${index + 1}</span>`
+        : `<span class="w-4 h-4 flex items-center justify-center text-[9px] text-[#A89488] font-bold">${index + 1}</span>`;
 
       return `
-        <div class="bg-white rounded-xl p-4 border border-[#E8DFD8] shadow-xs flex items-center justify-between hover:border-[#D6C7BE] transition group">
-          <div class="flex items-center space-x-3 flex-1 min-w-0 pr-2">
+        <div class="bg-white rounded-xl p-3 border border-[#E8DDD5] shadow-xs flex items-center justify-between hover:border-[#D8C8BF] transition">
+          <div class="flex items-center space-x-2.5 flex-1 min-w-0 pr-2">
             ${rankBadge}
             <div class="min-w-0 flex-1">
-              <div class="text-sm md:text-base font-bold font-mincho text-[#2D231E] tracking-wider truncate">
+              <!-- スマホで15文字が1行で美しく収まる -->
+              <div class="text-xs sm:text-sm font-bold font-mincho text-[#2D231E] tracking-tight truncate">
                 ${plan.text}
               </div>
-              <div class="text-[10px] text-[#A8988F] mt-0.5">
-                15文字ピッタリ
+              <div class="text-[9px] text-[#8C766B] flex items-center space-x-1.5 mt-0.5">
+                <span class="text-rose-500 font-bold">15文字</span>
+                <span>·</span>
+                <span class="truncate">by ${plan.author || '匿名さん'}</span>
               </div>
             </div>
           </div>
@@ -391,10 +404,10 @@
           <!-- いいねボタン -->
           <button 
             onclick="window.toggleLikeHandler(${plan.id})" 
-            class="flex items-center space-x-1.5 px-3 py-1.5 rounded-full border transition active:scale-95 text-xs font-bold ${
+            class="flex items-center space-x-1 px-2.5 py-1 rounded-full border transition active:scale-95 text-[11px] font-bold ${
               isVoted 
                 ? 'bg-rose-50 border-rose-300 text-rose-600 shadow-xs' 
-                : 'bg-[#FAF7F5] border-[#E8DFD8] text-[#8C7A70] hover:border-[#D6C7BE]'
+                : 'bg-[#FAF5F2] border-[#E8DDD5] text-[#8C766B] hover:border-[#D8C8BF]'
             }"
           >
             <span class="${isVoted ? 'heart-bounce' : ''}">${isVoted ? '❤️' : '🤍'}</span>
@@ -412,7 +425,6 @@
     initCharGrid();
     loadData();
 
-    // 入力監視
     const planInput = document.getElementById('planInput');
     if (planInput) {
       planInput.addEventListener('input', (e) => {
@@ -425,7 +437,6 @@
       });
     }
 
-    // クリアボタン
     document.getElementById('btnClearInput')?.addEventListener('click', () => {
       if (planInput) {
         planInput.value = '';
@@ -434,23 +445,19 @@
       }
     });
 
-    // 投稿ボタン
     document.getElementById('btnSubmitPlan')?.addEventListener('click', submitPlan);
-
-    // ルーレット
     document.getElementById('btnSpinRoulette')?.addEventListener('click', spinRoulette);
     document.getElementById('btnShareRoulette')?.addEventListener('click', shareResultToX);
 
-    // ソート切り替え
     const sortLikes = document.getElementById('sortLikes');
     const sortNewest = document.getElementById('sortNewest');
     const sortRandom = document.getElementById('sortRandom');
 
     function setActiveSort(btn, sortKey) {
       [sortLikes, sortNewest, sortRandom].forEach(b => {
-        b.className = 'px-3 py-1 rounded-lg text-[#8C7A70] hover:text-[#3D312A] transition';
+        b.className = 'px-2 py-0.5 rounded-md text-[#8C766B] hover:text-[#2D231E] transition';
       });
-      btn.className = 'px-3 py-1 rounded-lg font-bold bg-white text-[#3D312A] shadow-xs transition';
+      btn.className = 'px-2 py-0.5 rounded-md font-bold bg-white text-[#2D231E] shadow-xs transition';
       state.currentSort = sortKey;
       renderPlans();
     }
@@ -459,19 +466,6 @@
     sortNewest?.addEventListener('click', () => setActiveSort(sortNewest, 'newest'));
     sortRandom?.addEventListener('click', () => setActiveSort(sortRandom, 'random'));
 
-    // ZINE企画モーダル
-    const zineModal = document.getElementById('zineModal');
-    document.getElementById('btnAboutZine')?.addEventListener('click', () => {
-      zineModal?.classList.remove('hidden');
-    });
-    document.getElementById('btnCloseZineModal')?.addEventListener('click', () => {
-      zineModal?.classList.add('hidden');
-    });
-    document.getElementById('btnZineModalClose')?.addEventListener('click', () => {
-      zineModal?.classList.add('hidden');
-    });
-
-    // グローバル公開用ハンドラ
     window.toggleLikeHandler = toggleLike;
   });
 
