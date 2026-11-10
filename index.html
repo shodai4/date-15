@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>理想のデートプランを15文字でどうぞ。</title>
+  <meta name="description" content="たった15文字で綴る、ふたりだけの愛おしい日常。みんなの理想のデートプランを投稿・投票・ルーレットで決めるWebアプリ。">
+  <meta name="theme-color" content="#FAF7F5">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: 日本語の手書き・丸ゴシック・明朝 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@400;500&family=Zen+Maru+Gothic:wght@400;700;900&family=Shippori+Mincho:wght@500;700&display=swap" rel="stylesheet">
+  <!-- Canvas Confetti (紙吹雪演出) -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Zen Maru Gothic', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #FAF7F5;
+      color: #3D312A;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .font-mincho {
+      font-family: 'Shippori Mincho', serif;
+    }
+    .font-kiwi {
+      font-family: 'Kiwi Maru', serif;
+    }
+
+    /* 原稿用紙・15マス */
+    .char-cell {
+      aspect-ratio: 1 / 1;
+      border: 1.5px solid #D6C7BE;
+      background-color: #FFFFFF;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #3D312A;
+    }
+    .char-cell.filled {
+      border-color: #B28271;
+      background-color: #FFFDFB;
+      color: #2D231E;
+      box-shadow: 0 2px 4px -1px rgba(178, 130, 113, 0.15);
+    }
+    .char-cell.perfect {
+      border-color: #E07A7A;
+      background-color: #FFF5F5;
+      color: #C53030;
+      animation: pulse 1s infinite alternate;
+    }
+
+    /* ルーレットスロットアニメーション */
+    .slot-rolling {
+      animation: slotRoll 0.08s infinite linear;
+    }
+    @keyframes slotRoll {
+      0% { transform: translateY(0); opacity: 0.9; }
+      50% { transform: translateY(-4px); opacity: 0.7; }
+      100% { transform: translateY(0); opacity: 0.9; }
+    }
+
+    /* ハートのいいねアニメーション */
+    .heart-bounce {
+      animation: heartBounce 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes heartBounce {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.35); }
+      100% { transform: scale(1); }
+    }
+
+    /* カスタムスクロールバー */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #FAF7F5;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #D6C7BE;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-rose-100 selection:text-rose-900">
+
+  <!-- ヘッダー -->
+  <header class="w-full bg-white/90 backdrop-blur-md border-b border-[#E8DFD8] sticky top-0 z-30 px-4 py-3 shadow-xs">
+    <div class="max-w-xl mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <span class="text-2xl">☕</span>
+        <div>
+          <h1 class="text-sm md:text-base font-bold text-[#3D312A] tracking-wider font-mincho">
+            理想のデートプランを15文字でどうぞ。
+          </h1>
+          <p class="text-[10px] text-[#8C7A70]">たった15文字で綴る、愛おしい日常。</p>
+        </div>
+      </div>
+      <button id="btnAboutZine" class="text-xs bg-[#F4ECE4] hover:bg-[#EAE0D6] text-[#6E594F] px-2.5 py-1 rounded-full font-bold border border-[#D6C7BE] transition flex items-center space-x-1">
+        <span>📖</span>
+        <span>ZINE企画</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- メインコンテンツ -->
+  <main class="max-w-xl w-full mx-auto px-4 py-6 flex-1 space-y-8">
+
+    <!-- セクション1: 今日のデートを決める「運命の15文字ルーレット」 -->
+    <section class="bg-white rounded-2xl p-5 border border-[#E8DFD8] shadow-sm relative overflow-hidden">
+      <div class="absolute -top-10 -right-10 w-28 h-28 bg-[#FFF5F5] rounded-full blur-xl pointer-events-none"></div>
+      
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center space-x-1.5">
+          <span class="text-lg">🎲</span>
+          <h2 class="text-xs font-bold text-[#6E594F] tracking-wide uppercase">Dating Roulette</h2>
+        </div>
+        <span class="text-[10px] text-[#A8988F] bg-[#FAF7F5] px-2 py-0.5 rounded-full border border-[#E8DFD8]">
+          全 <span id="rouletteTotalCount" class="font-bold text-[#3D312A]">10</span> プラン
+        </span>
+      </div>
+
+      <!-- ルーレット表示パネル -->
+      <div class="bg-[#FAF7F5] rounded-xl p-6 border-2 border-dashed border-[#D6C7BE] text-center min-h-[110px] flex flex-col items-center justify-center relative">
+        <div id="rouletteResult" class="text-lg md:text-xl font-bold font-mincho text-[#2D231E] tracking-widest leading-relaxed transition-all duration-200">
+          「下のボタンを押してね」
+        </div>
+        <div id="rouletteCharsCount" class="text-[10px] text-[#A8988F] mt-2 hidden">
+          (15文字ピッタリ)
+        </div>
+      </div>
+
+      <!-- ルーレット起動ボタン -->
+      <div class="mt-4 flex flex-col sm:flex-row gap-2">
+        <button id="btnSpinRoulette" class="flex-1 bg-[#E07A7A] hover:bg-[#D46B6B] active:scale-[0.98] text-white font-bold py-3 px-6 rounded-xl shadow-md transition flex items-center justify-center space-x-2 text-sm tracking-wider">
+          <span>✨</span>
+          <span>今日のデートを決める！</span>
+        </button>
+        <button id="btnShareRoulette" class="hidden bg-[#FAF7F5] hover:bg-[#F0E6DE] text-[#6E594F] border border-[#D6C7BE] font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center space-x-1 transition">
+          <span>𝕏</span>
+          <span>結果をシェア</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- セクション2: 15文字ピッタリ投稿フォーム -->
+    <section class="bg-white rounded-2xl p-5 border border-[#E8DFD8] shadow-sm space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-1.5">
+          <span class="text-lg">✍️</span>
+          <h2 class="text-sm font-bold text-[#3D312A] tracking-wide">
+            あなたの理想を15文字でどうぞ。
+          </h2>
+        </div>
+        <span id="charCountBadge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#FAF7F5] text-[#8C7A70] border border-[#D6C7BE]">
+          <span id="currentCharCount">0</span> / 15文字
+        </span>
+      </div>
+
+      <!-- 15文字原稿用紙マス目プレビュー -->
+      <div class="space-y-1.5">
+        <div class="grid grid-cols-5 gap-1.5 sm:gap-2 max-w-sm mx-auto" id="charGrid">
+          <!-- JSで15マスを動的生成 -->
+        </div>
+        <div class="text-center">
+          <span id="statusMessage" class="text-[11px] text-[#A8988F] transition-all">
+            ピッタリ15文字になると投稿できます
+          </span>
+        </div>
+      </div>
+
+      <!-- 入力欄 -->
+      <div class="space-y-2">
+        <div class="relative">
+          <input 
+            type="text" 
+            id="planInput" 
+            maxlength="20" 
+            placeholder="例: 古本屋で五百円分選び合う日" 
+            class="w-full px-4 py-3 bg-[#FAF7F5] border-2 border-[#D6C7BE] rounded-xl text-sm text-[#2D231E] focus:outline-none focus:border-[#E07A7A] focus:bg-white transition tracking-wider placeholder-[#B8AAA2]"
+          >
+          <button id="btnClearInput" class="absolute right-3 top-3 text-[#A8988F] hover:text-[#3D312A] text-sm hidden">
+            ✕
+          </button>
+        </div>
+
+        <!-- 投稿ボタン -->
+        <button 
+          id="btnSubmitPlan" 
+          disabled 
+          class="w-full py-3 px-6 rounded-xl font-bold text-sm text-white bg-[#D6C7BE] cursor-not-allowed transition flex items-center justify-center space-x-2 shadow-xs"
+        >
+          <span>📮</span>
+          <span>15文字ピッタリで投稿する</span>
+        </button>
+
+        <!-- ZINE著作権・利用規約注記 -->
+        <div class="bg-[#FAF7F5] p-3 rounded-xl border border-[#E8DFD8] text-[10px] text-[#8C7A70] leading-relaxed space-y-1">
+          <div class="flex items-center space-x-1 font-bold text-[#6E594F]">
+            <span>ℹ️</span>
+            <span>投稿と著作権・ZINE掲載について</span>
+          </div>
+          <p>
+            ※ご投稿いただいたデートプランの著作権・出版利用権は企画者（翔大）に帰属し、今後制作予定の書籍<strong>『理想のデート15文字ZINE（仮）』</strong>や関連展示、Webメディア等に無償にて掲載・収録させていただく場合がございます。投稿をもってこれに同意したものとみなします。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- セクション3: みんなの投稿 & いいねランキング -->
+    <section class="space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <span class="text-lg">🏆</span>
+          <h2 class="text-sm font-bold text-[#3D312A] tracking-wide">
+            デートプラン一覧
+          </h2>
+        </div>
+
+        <!-- ソート切り替えタブ -->
+        <div class="flex bg-[#F0E6DE] p-1 rounded-xl text-xs">
+          <button id="sortLikes" class="px-3 py-1 rounded-lg font-bold bg-white text-[#3D312A] shadow-xs transition">
+            👍 いいね順
+          </button>
+          <button id="sortNewest" class="px-3 py-1 rounded-lg text-[#8C7A70] hover:text-[#3D312A] transition">
+            🌱 新着順
+          </button>
+          <button id="sortRandom" class="px-3 py-1 rounded-lg text-[#8C7A70] hover:text-[#3D312A] transition">
+            🎲 ランダム
+          </button>
+        </div>
+      </div>
+
+      <!-- プランカード一覧リスト -->
+      <div id="plansContainer" class="space-y-2.5">
+        <!-- JSで動的レンダリング -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- フッター -->
+  <footer class="w-full bg-[#FAF7F5] border-t border-[#E8DFD8] py-8 px-4 text-center text-xs text-[#8C7A70] space-y-3">
+    <div class="flex justify-center items-center space-x-3 text-xs">
+      <span class="font-bold text-[#6E594F]">企画・制作: 翔大（Shodai）</span>
+      <span>·</span>
+      <a href="https://thebase.com" target="_blank" rel="noopener noreferrer" class="hover:text-[#3D312A] underline">BASEショップ</a>
+      <span>·</span>
+      <a href="https://shodai4.github.io/sasabe-gacha/" target="_blank" rel="noopener noreferrer" class="hover:text-[#3D312A] underline">画材ガチャ</a>
+    </div>
+    <p class="text-[10px] text-[#A8988F]">
+      © 2026 理想のデートプラン15文字 All Rights Reserved.
+    </p>
+  </footer>
+
+  <!-- ZINE企画モーダル -->
+  <div id="zineModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 border border-[#E8DFD8] shadow-xl text-left">
+      <div class="flex items-center justify-between border-b border-[#E8DFD8] pb-3">
+        <div class="flex items-center space-x-2">
+          <span class="text-xl">📖</span>
+          <h3 class="font-bold text-base text-[#3D312A] font-mincho">『理想のデート15文字ZINE』企画</h3>
+        </div>
+        <button id="btnCloseZineModal" class="text-[#A8988F] hover:text-[#3D312A] text-lg font-bold">✕</button>
+      </div>
+
+      <div class="text-xs text-[#6E594F] space-y-3 leading-relaxed">
+        <p>
+          「古本屋で五百円分選び合う」「駄菓子屋で三百円分豪遊す」——。
+        </p>
+        <p>
+          このWebサイトに集まった珠玉の「15文字のデートプラン」の中から、特に共感を集めた素敵なアイデアを厳選し、画家・翔大の描き下ろし挿絵とともに1冊のアートZINE（手のひらサイズのリトルプレス書籍）として出版します。
+        </p>
+        <div class="bg-[#FAF7F5] p-3 rounded-xl border border-[#E8DFD8] space-y-1 text-[11px]">
+          <div class="font-bold text-[#3D312A]">💡 あなたの15文字が本になるかも？</div>
+          <p class="text-[#8C7A70]">
+            投稿されたプランは随時審査・選定され、ZINEに収録予定です。ぜひあなたのとっておきの日常を投稿してくださいね。
+          </p>
+        </div>
+      </div>
+
+      <button id="btnZineModalClose" class="w-full bg-[#E07A7A] hover:bg-[#D46B6B] text-white py-2.5 rounded-xl font-bold text-xs shadow-xs transition">
+        閉じる
+      </button>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
