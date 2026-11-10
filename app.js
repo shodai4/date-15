@@ -52,7 +52,6 @@
       }
     } catch (e) {}
 
-    // 前回使ったユーザーネームの復元
     try {
       const lastAuthor = localStorage.getItem(STORAGE_KEY_AUTHOR);
       const authorInput = document.getElementById('authorInput');
@@ -160,23 +159,23 @@
     }
 
     if (len === 15) {
-      countBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-300 animate-pulse';
+      countBadge.className = 'shrink-0 whitespace-nowrap text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-300 animate-pulse';
       msgEl.textContent = '✨ 15文字ピッタリ！このまま投稿できます！';
-      msgEl.className = 'text-[9.5px] font-bold text-rose-600 transition-all';
+      msgEl.className = 'text-[9.5px] font-bold text-rose-600 whitespace-nowrap transition-all';
       submitBtn.disabled = false;
       submitBtn.className = 'w-full py-2.5 px-4 rounded-xl font-bold text-xs text-white bg-gradient-to-r from-[#E26D6D] to-[#D65D5D] hover:opacity-95 active:scale-[0.99] shadow-md transition flex items-center justify-center space-x-1.5 cursor-pointer';
     } else if (len > 15) {
       const over = len - 15;
-      countBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-950 text-rose-200 border border-rose-700';
+      countBadge.className = 'shrink-0 whitespace-nowrap text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-950 text-rose-200 border border-rose-700';
       msgEl.textContent = `⚠️ ${over}文字オーバーです（15文字丁度に削ってね）`;
-      msgEl.className = 'text-[9.5px] font-bold text-rose-500 transition-all';
+      msgEl.className = 'text-[9.5px] font-bold text-rose-500 whitespace-nowrap transition-all';
       submitBtn.disabled = true;
       submitBtn.className = 'w-full py-2.5 px-4 rounded-xl font-bold text-xs text-white bg-[#D8C8BF] cursor-not-allowed transition flex items-center justify-center space-x-1.5 shadow-xs';
     } else {
       const remain = 15 - len;
-      countBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FAF5F2] text-[#8C766B] border border-[#D8C8BF]';
+      countBadge.className = 'shrink-0 whitespace-nowrap text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FAF5F2] text-[#8C766B] border border-[#D8C8BF]';
       msgEl.textContent = len === 0 ? 'ピッタリ15文字になると投稿できます' : `あと ${remain} 文字でピッタリです`;
-      msgEl.className = 'text-[9.5px] text-[#A89488] transition-all';
+      msgEl.className = 'text-[9.5px] text-[#A89488] whitespace-nowrap transition-all';
       submitBtn.disabled = true;
       submitBtn.className = 'w-full py-2.5 px-4 rounded-xl font-bold text-xs text-white bg-[#D8C8BF] cursor-not-allowed transition flex items-center justify-center space-x-1.5 shadow-xs';
     }
@@ -373,7 +372,7 @@
     }
 
     if (sorted.length === 0) {
-      container.innerHTML = '<div class="text-center py-8 text-xs text-[#A89488]">まだ投稿がありません。最初の15文字を投稿してみよう！</div>';
+      container.innerHTML = '<div class="text-center py-6 text-xs text-[#A89488]">まだ投稿がありません。最初の15文字を投稿してみよう！</div>';
       return;
     }
 
@@ -381,19 +380,19 @@
       const isVoted = state.votedIds.has(plan.id);
       const isTop3 = state.currentSort === 'likes' && index < 3;
       const rankBadge = isTop3 
-        ? `<span class="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold ${index === 0 ? 'bg-amber-400 text-amber-950' : index === 1 ? 'bg-slate-300 text-slate-800' : 'bg-amber-600 text-amber-50'}">${index + 1}</span>`
-        : `<span class="w-4 h-4 flex items-center justify-center text-[9px] text-[#A89488] font-bold">${index + 1}</span>`;
+        ? `<span class="w-4 h-4 shrink-0 rounded-full flex items-center justify-center text-[9px] font-bold ${index === 0 ? 'bg-amber-400 text-amber-950' : index === 1 ? 'bg-slate-300 text-slate-800' : 'bg-amber-600 text-amber-50'}">${index + 1}</span>`
+        : `<span class="w-4 h-4 shrink-0 flex items-center justify-center text-[9px] text-[#A89488] font-bold">${index + 1}</span>`;
 
       return `
         <div class="bg-white rounded-xl p-3 border border-[#E8DDD5] shadow-xs flex items-center justify-between hover:border-[#D8C8BF] transition">
-          <div class="flex items-center space-x-2.5 flex-1 min-w-0 pr-2">
+          <div class="flex items-center space-x-2 flex-1 min-w-0 pr-2">
             ${rankBadge}
             <div class="min-w-0 flex-1">
-              <!-- スマホで15文字が1行で美しく収まる -->
-              <div class="text-xs sm:text-sm font-bold font-mincho text-[#2D231E] tracking-tight truncate">
+              <!-- スマホ幅320pxでも1行に収まるフォント設計 -->
+              <div class="text-xs sm:text-sm font-bold font-mincho text-[#2D231E] tracking-tight truncate whitespace-nowrap">
                 ${plan.text}
               </div>
-              <div class="text-[9px] text-[#8C766B] flex items-center space-x-1.5 mt-0.5">
+              <div class="text-[9px] text-[#8C766B] flex items-center space-x-1 mt-0.5 whitespace-nowrap">
                 <span class="text-rose-500 font-bold">15文字</span>
                 <span>·</span>
                 <span class="truncate">by ${plan.author || '匿名さん'}</span>
@@ -404,7 +403,7 @@
           <!-- いいねボタン -->
           <button 
             onclick="window.toggleLikeHandler(${plan.id})" 
-            class="flex items-center space-x-1 px-2.5 py-1 rounded-full border transition active:scale-95 text-[11px] font-bold ${
+            class="shrink-0 flex items-center space-x-1 px-2.5 py-1 rounded-full border transition active:scale-95 text-[11px] font-bold ${
               isVoted 
                 ? 'bg-rose-50 border-rose-300 text-rose-600 shadow-xs' 
                 : 'bg-[#FAF5F2] border-[#E8DDD5] text-[#8C766B] hover:border-[#D8C8BF]'
@@ -455,9 +454,9 @@
 
     function setActiveSort(btn, sortKey) {
       [sortLikes, sortNewest, sortRandom].forEach(b => {
-        b.className = 'px-2 py-0.5 rounded-md text-[#8C766B] hover:text-[#2D231E] transition';
+        b.className = 'py-1 rounded-lg text-[#8C766B] hover:text-[#2D231E] text-center whitespace-nowrap transition';
       });
-      btn.className = 'px-2 py-0.5 rounded-md font-bold bg-white text-[#2D231E] shadow-xs transition';
+      btn.className = 'py-1 rounded-lg font-bold bg-white text-[#2D231E] shadow-xs text-center whitespace-nowrap transition';
       state.currentSort = sortKey;
       renderPlans();
     }
