@@ -163,21 +163,21 @@
       msgEl.textContent = '✨ 15文字ピッタリ！このまま投稿できます！';
       msgEl.className = 'text-[9.5px] font-bold text-rose-600 whitespace-nowrap transition-all';
       submitBtn.disabled = false;
-      submitBtn.className = 'w-full py-2.5 px-4 rounded-xl font-bold text-xs text-white bg-gradient-to-r from-[#E26D6D] to-[#D65D5D] hover:opacity-95 active:scale-[0.99] shadow-md transition flex items-center justify-center space-x-1.5 cursor-pointer';
+      submitBtn.className = 'w-full py-2.5 px-4 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-[#E26D6D] to-[#D65D5D] hover:opacity-95 active:scale-[0.99] shadow-md transition flex items-center justify-center space-x-1.5 cursor-pointer';
     } else if (len > 15) {
       const over = len - 15;
       countBadge.className = 'shrink-0 whitespace-nowrap text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-950 text-rose-200 border border-rose-700';
       msgEl.textContent = `⚠️ ${over}文字オーバーです（15文字丁度に削ってね）`;
       msgEl.className = 'text-[9.5px] font-bold text-rose-500 whitespace-nowrap transition-all';
       submitBtn.disabled = true;
-      submitBtn.className = 'w-full py-2.5 px-4 rounded-xl font-bold text-xs text-white bg-[#D8C8BF] cursor-not-allowed transition flex items-center justify-center space-x-1.5 shadow-xs';
+      submitBtn.className = 'w-full py-2.5 px-4 rounded-xl font-bold text-sm text-white bg-[#D8C8BF] cursor-not-allowed transition flex items-center justify-center space-x-1.5 shadow-xs';
     } else {
       const remain = 15 - len;
       countBadge.className = 'shrink-0 whitespace-nowrap text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FAF5F2] text-[#8C766B] border border-[#D8C8BF]';
       msgEl.textContent = len === 0 ? 'ピッタリ15文字になると投稿できます' : `あと ${remain} 文字でピッタリです`;
       msgEl.className = 'text-[9.5px] text-[#A89488] whitespace-nowrap transition-all';
       submitBtn.disabled = true;
-      submitBtn.className = 'w-full py-2.5 px-4 rounded-xl font-bold text-xs text-white bg-[#D8C8BF] cursor-not-allowed transition flex items-center justify-center space-x-1.5 shadow-xs';
+      submitBtn.className = 'w-full py-2.5 px-4 rounded-xl font-bold text-sm text-white bg-[#D8C8BF] cursor-not-allowed transition flex items-center justify-center space-x-1.5 shadow-xs';
     }
   }
 
@@ -325,6 +325,7 @@
         }
         if (shareBtn) shareBtn.classList.remove('hidden');
         spinBtn.disabled = false;
+        spinBtn.innerHTML = '<span>🎲</span><span>もう一度決める</span>';
         state.isSpinning = false;
       }
     }, interval);
