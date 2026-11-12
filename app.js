@@ -284,7 +284,29 @@
     }
 
     renderPlans();
+    updateRouletteLikeBtn();
   }
+  function updateRouletteLikeBtn() {
+    const likeBtn = document.getElementById('btnLikeRoulette');
+    const heartEl = document.getElementById('rouletteLikeHeart');
+    const countEl = document.getElementById('rouletteLikeCount');
+    if (!likeBtn || !state.selectedPlan) return;
+
+    const isVoted = state.votedIds.has(state.selectedPlan.id);
+    if (heartEl) {
+      heartEl.textContent = isVoted ? '❤️' : '🤍';
+      heartEl.className = isVoted ? 'heart-bounce' : '';
+    }
+    if (countEl) {
+      countEl.textContent = state.selectedPlan.likes || 0;
+    }
+    if (isVoted) {
+      likeBtn.className = 'bg-rose-50 hover:bg-rose-100 border border-rose-300 text-rose-600 font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center space-x-1 transition active:scale-95 shadow-xs whitespace-nowrap';
+    } else {
+      likeBtn.className = 'bg-[#FAF5F2] hover:bg-[#EFE5DF] border border-[#D8C8BF] text-[#8C766B] font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center space-x-1 transition active:scale-95 whitespace-nowrap';
+    }
+  }
+
 
   // ==========================================
   // 7. 運命のルーレット機能
@@ -297,11 +319,13 @@
     const authorEl = document.getElementById('rouletteAuthor');
     const spinBtn = document.getElementById('btnSpinRoulette');
     const shareBtn = document.getElementById('btnShareRoulette');
+    const likeBtn = document.getElementById('btnLikeRoulette');
 
     resultEl.classList.add('slot-rolling', 'text-rose-500');
     spinBtn.disabled = true;
     if (authorEl) authorEl.classList.add('hidden');
     if (shareBtn) shareBtn.classList.add('hidden');
+    if (likeBtn) likeBtn.classList.add('hidden');
 
     let rollCount = 0;
     const maxRolls = 20;
@@ -324,6 +348,8 @@
           authorEl.classList.remove('hidden');
         }
         if (shareBtn) shareBtn.classList.remove('hidden');
+        updateRouletteLikeBtn();
+        if (likeBtn) likeBtn.classList.remove('hidden');
         spinBtn.disabled = false;
         spinBtn.innerHTML = '<span>🎲</span><span>もう一度決める</span>';
         state.isSpinning = false;
@@ -435,6 +461,10 @@
 
     document.getElementById('btnSubmitPlan')?.addEventListener('click', submitPlan);
     document.getElementById('btnSpinRoulette')?.addEventListener('click', spinRoulette);
+    document.getElementById('btnLikeRoulette')?.addEventListener('click', async () => {
+      if (!state.selectedPlan) return;
+      await toggleLike(state.selectedPlan.id);
+    });
     document.getElementById('btnShareRoulette')?.addEventListener('click', shareResultToX);
 
     const sortLikes = document.getElementById('sortLikes');
