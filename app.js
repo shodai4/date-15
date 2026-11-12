@@ -37,6 +37,32 @@
   const STORAGE_KEY_VOTES = 'date15_voted_ids';
   const STORAGE_KEY_AUTHOR = 'date15_last_author';
 
+  // ==========================================
+  // センシティブワード（NGワードリスト）
+  // ==========================================
+  const SENSITIVE_WORDS = [
+    // 性的・露骨・下ネタ
+    'セックス', 'せっくす', 'オナニー', 'おなにー', '風俗', 'ふうぞく', 'デリヘル', 'ソープ', 
+    'チンコ', 'ちんこ', 'マンコ', 'まんこ', '巨乳', 'エロ', 'えろ', '援交', 'パパ活', '買春', '売春', 
+    'ヤリマン', '童貞', '処女', 'おっぱい', '性交', '射精', '痴漢', '盗撮', '変態', '性行為', 'フェラ', '強姦', 'レイプ',
+    // 暴力・脅迫・自傷
+    '死ね', 'しね', '殺す', 'ころす', '自殺', '首吊り', '刺す', '殴る', '虐待',
+    // 誹謗中傷・差別
+    'ガイジ', 'キチガイ', 'きちがい', 'ブス', 'ブサイク',
+    // 違法・薬物
+    '大麻', '覚醒剤', 'コカイン', '闇バイト', '裏バイト'
+  ];
+
+  function checkSensitiveWord(str) {
+    if (!str) return false;
+    const normalized = str.toLowerCase().replace(/[\s\u3000]/g, '');
+    return SENSITIVE_WORDS.some(word => normalized.includes(word));
+  }
+
+  function hasWhitespace(str) {
+    return /[\s\u3000]/.test(str);
+  }
+
   function countChars(str) {
     return [...str].length;
   }
@@ -158,6 +184,24 @@
       }
     }
 
+    if (hasWhitespace(text)) {
+      countBadge.className = 'shrink-0 whitespace-nowrap text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-950 text-rose-200 border border-rose-700';
+      msgEl.textContent = '⚠️ 空白（スペース）は使えません';
+      msgEl.className = 'text-[9.5px] font-bold text-rose-500 whitespace-nowrap transition-all';
+      submitBtn.disabled = true;
+      submitBtn.className = 'w-full py-2.5 px-4 rounded-xl font-bold text-sm text-white bg-[#D8C8BF] cursor-not-allowed transition flex items-center justify-center space-x-1.5 shadow-xs';
+      return;
+    }
+
+    if (checkSensitiveWord(text)) {
+      countBadge.className = 'shrink-0 whitespace-nowrap text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-950 text-rose-200 border border-rose-700';
+      msgEl.textContent = '⚠️ 不適切な表現が含まれています';
+      msgEl.className = 'text-[9.5px] font-bold text-rose-500 whitespace-nowrap transition-all';
+      submitBtn.disabled = true;
+      submitBtn.className = 'w-full py-2.5 px-4 rounded-xl font-bold text-sm text-white bg-[#D8C8BF] cursor-not-allowed transition flex items-center justify-center space-x-1.5 shadow-xs';
+      return;
+    }
+
     if (len === 15) {
       countBadge.className = 'shrink-0 whitespace-nowrap text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-300 animate-pulse';
       msgEl.textContent = '✨ 15文字ピッタリ！このまま投稿できます！';
@@ -190,12 +234,27 @@
     if (!input) return;
 
     const rawText = input.value.trim();
+
+    if (hasWhitespace(input.value)) {
+      alert('空白（スペース）は使用できません。');
+      return;
+    }
+
+    if (checkSensitiveWord(rawText)) {
+      alert('不適切な表現が含まれているため投稿できません。');
+      return;
+    }
+
     if (countChars(rawText) !== 15) {
       alert('ピッタリ15文字で入力してください。');
       return;
     }
 
     const author = (authorInput && authorInput.value.trim()) ? authorInput.value.trim() : '匿名希望';
+    if (checkSensitiveWord(author)) {
+      alert('ニックネームに不適切な表現が含まれています。');
+      return;
+    }
     try {
       localStorage.setItem(STORAGE_KEY_AUTHOR, author);
     } catch (e) {}
