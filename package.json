@@ -1,0 +1,24 @@
+{
+  "name": "date-15",
+  "version": "1.0.0",
+  "description": "15文字デート - たった15文字で綴る、ふたりだけの愛おしい日常。",
+  "author": "お絵描き楽しも委員会（しょうだい）",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build.js",
+    "assets:generate": "python3 scripts/generate-assets.py",
+    "cap:add": "npm run build && npx cap add ios && node scripts/configure-ios.js && node scripts/setup-ios-assets.js",
+    "cap:sync": "npm run build && npx cap sync ios && node scripts/configure-ios.js && node scripts/setup-ios-assets.js",
+    "cap:open": "npx cap open ios",
+    "ios:setup": "npm run assets:generate && npm run build && npx cap add ios && node scripts/configure-ios.js && node scripts/setup-ios-assets.js && npx cap open ios",
+    "ios:config": "node scripts/configure-ios.js && node scripts/setup-ios-assets.js"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/ios": "^6.2.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.2.0"
+  }
+}

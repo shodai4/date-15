@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>理想のデートを15文字でどうぞ。| ふたりの恋のルーレット</title>
+  <meta name="description" content="たった15文字で綴る、ふたりだけの愛おしいデート。みんなの理想のデートプランを投稿・投票・ルーレットで決めるWebアプリ。">
+  <meta name="theme-color" content="#FAF5F2">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&family=Shippori+Mincho:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Zen Maru Gothic', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #FAF5F2;
+      color: #382C26;
+      -webkit-tap-highlight-color: transparent;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .font-mincho {
+      font-family: 'Shippori Mincho', serif;
+    }
+
+    /* 原稿用紙・15マス（視認性向上・大きめサイズ） */
+    .char-cell {
+      width: 34px;
+      height: 34px;
+      border: 1.5px solid #D8C8BF;
+      background-color: #FFFFFF;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+      color: #382C26;
+      border-radius: 6px;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
+    }
+    .char-cell.filled {
+      border-color: #C27D66;
+      background-color: #FFFDFB;
+      color: #2D231E;
+      box-shadow: 0 1px 3px rgba(194, 125, 102, 0.15);
+    }
+    .char-cell.perfect {
+      border-color: #E26D6D;
+      background-color: #FFF2F2;
+      color: #B91C1C;
+      animation: pulse 1s infinite alternate;
+    }
+
+    /* スロット回転アニメーション */
+    .slot-rolling {
+      animation: slotRoll 0.08s infinite linear;
+    }
+    @keyframes slotRoll {
+      0% { transform: translateY(0); opacity: 0.9; }
+      50% { transform: translateY(-3px); opacity: 0.7; }
+      100% { transform: translateY(0); opacity: 0.9; }
+    }
+
+    /* ハートのいいねアニメーション */
+    .heart-bounce {
+      animation: heartBounce 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes heartBounce {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+      100% { transform: scale(1); }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-rose-100 selection:text-rose-900">
+
+  <!-- ヘッダー（スマホ改行崩れ完全防止） -->
+  <header class="w-full bg-white/95 backdrop-blur-md border-b border-[#E8DDD5] sticky top-0 z-30 px-3 py-2 shadow-xs">
+    <div class="max-w-md mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-2 min-w-0">
+        <span class="text-xl shrink-0">☕</span>
+        <div class="min-w-0">
+          <h1 class="text-xs sm:text-sm font-bold text-[#2D231E] font-mincho leading-tight">
+            <span class="inline-block whitespace-nowrap">理想のデートを</span><span class="inline-block whitespace-nowrap">15文字でどうぞ。</span>
+          </h1>
+          <p class="text-[9px] text-[#8C766B] whitespace-nowrap truncate">
+            ふたりの日常を、とっておきのデートに。
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- メインコンテンツ -->
+  <main class="max-w-md w-full mx-auto px-3.5 py-3.5 flex-1 space-y-3.5">
+
+    <!-- ① 今日のデートルーレット（一番上に配置＆高さをスリム化！） -->
+    <section class="bg-white rounded-2xl p-3 sm:p-3.5 border border-[#E8DDD5] shadow-xs relative overflow-hidden">
+      <div class="flex items-center justify-between mb-1.5">
+        <div class="flex items-center space-x-1.5">
+          <span class="text-sm">🎲</span>
+          <h2 class="text-xs font-bold text-[#8C766B] tracking-wider uppercase whitespace-nowrap">ルーレット</h2>
+        </div>
+        <span class="text-[9px] text-[#A89488] bg-[#FAF5F2] px-2 py-0.5 rounded-full border border-[#E8DDD5] whitespace-nowrap">
+          全 <span id="rouletteTotalCount" class="font-bold text-[#2D231E]">10</span> プラン
+        </span>
+      </div>
+
+      <!-- ルーレット表示パネル（高さをキュッとスリムに） -->
+      <div class="bg-[#FAF5F2] rounded-xl px-3 py-2.5 border border-dashed border-[#D8C8BF] text-center min-h-[64px] flex flex-col items-center justify-center relative">
+        <div id="rouletteResult" class="text-xs sm:text-sm font-bold font-mincho text-[#2D231E] leading-snug transition-all duration-200">
+          「今日のふたり、何して遊ぶ？」
+        </div>
+        <div id="rouletteAuthor" class="text-[9px] text-[#8C766B] mt-0.5 hidden whitespace-nowrap"></div>
+      </div>
+
+      <!-- ルーレット起動ボタン -->
+      <div class="mt-2 flex gap-1.5">
+        <button id="btnSpinRoulette" class="flex-1 bg-gradient-to-r from-[#E26D6D] to-[#D65D5D] hover:opacity-95 active:scale-[0.98] text-white font-bold py-2 px-3 rounded-xl shadow-xs transition flex items-center justify-center space-x-1 text-xs tracking-wider whitespace-nowrap">
+          <span>🎲</span>
+          <span>今日のデートを決める！</span>
+        </button>
+        <button id="btnLikeRoulette" class="hidden bg-[#FAF5F2] hover:bg-[#EFE5DF] border border-[#D8C8BF] text-[#8C766B] font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center space-x-1 transition active:scale-95 whitespace-nowrap">
+          <span id="rouletteLikeHeart">🤍</span>
+          <span id="rouletteLikeCount">0</span>
+        </button>
+        <button id="btnShareRoulette" class="hidden bg-[#FAF5F2] hover:bg-[#EFE5DF] text-[#6E564B] border border-[#D8C8BF] font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center space-x-1 transition whitespace-nowrap">
+          <span>𝕏</span>
+          <span>シェア</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ② 15文字ピッタリ投稿フォーム -->
+    <section class="bg-white rounded-2xl p-3.5 border border-[#E8DDD5] shadow-xs space-y-2.5">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-1.5 min-w-0">
+          <span class="text-sm shrink-0">💌</span>
+          <h2 class="text-xs sm:text-sm font-bold text-[#2D231E] leading-tight">
+            <span class="inline-block whitespace-nowrap">ふたりの理想のデートを</span><span class="inline-block whitespace-nowrap">15文字で</span>
+          </h2>
+        </div>
+        <span id="charCountBadge" class="shrink-0 whitespace-nowrap text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FAF5F2] text-[#8C766B] border border-[#D8C8BF]">
+          <span id="currentCharCount">0</span> / 15文字
+        </span>
+      </div>
+
+      <!-- 15文字原稿用紙マス目プレビュー -->
+      <div class="space-y-1.5 py-1">
+        <div class="flex justify-center">
+          <div class="grid grid-cols-5 gap-1.5" id="charGrid">
+            <!-- JSで15マス生成 (34x34px) -->
+          </div>
+        </div>
+        <div class="text-center">
+          <span id="statusMessage" class="text-[10px] text-[#A89488] whitespace-nowrap transition-all">
+            ピッタリ15文字になると投稿できます
+          </span>
+        </div>
+      </div>
+
+      <!-- 入力欄 -->
+      <div class="space-y-2">
+        <div class="relative">
+          <input 
+            type="text" 
+            id="planInput" 
+            maxlength="20" 
+            placeholder="例: 古本屋で五百円分選び合ってみる" 
+            class="w-full px-3 py-2 bg-[#FAF5F2] border border-[#D8C8BF] rounded-xl text-xs text-[#2D231E] focus:outline-none focus:border-[#E26D6D] focus:bg-white transition placeholder-[#B8A499]"
+          >
+          <button id="btnClearInput" class="absolute right-3 top-2 text-[#A89488] hover:text-[#2D231E] text-xs hidden">
+            ✕
+          </button>
+        </div>
+
+        <!-- ユーザーネーム入力欄 -->
+        <div class="flex items-center space-x-2">
+          <span class="text-[11px] text-[#8C766B] whitespace-nowrap">投稿者名:</span>
+          <input 
+            type="text" 
+            id="authorInput" 
+            maxlength="12" 
+            placeholder="お名前（未入力なら匿名希望）" 
+            class="flex-1 px-2.5 py-1.5 bg-[#FAF5F2] border border-[#D8C8BF] rounded-lg text-xs text-[#2D231E] focus:outline-none focus:border-[#E26D6D] focus:bg-white transition placeholder-[#B8A499]"
+          >
+        </div>
+
+        <!-- 投稿ボタン -->
+        <button 
+          id="btnSubmitPlan" 
+          disabled 
+          class="w-full py-2 px-4 rounded-xl font-bold text-sm text-white bg-[#D8C8BF] cursor-not-allowed transition flex items-center justify-center space-x-1.5 shadow-xs"
+        >
+          <span>📮</span>
+          <span>投稿</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ③ みんなのデートプラン & いいねランキング -->
+    <section class="space-y-2">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+        <div class="flex items-center space-x-1.5">
+          <span class="text-sm">🏆</span>
+          <h2 class="text-xs sm:text-sm font-bold text-[#2D231E] tracking-tight whitespace-nowrap">
+            デートプラン一覧
+          </h2>
+        </div>
+
+        <!-- ソート切り替えタブ -->
+        <div class="grid grid-cols-3 gap-1 bg-[#EFE5DF] p-1 rounded-xl text-[10.5px] w-full sm:w-auto">
+          <button id="sortLikes" class="py-1 rounded-lg font-bold bg-white text-[#2D231E] shadow-xs text-center whitespace-nowrap transition">
+            👍 人気順
+          </button>
+          <button id="sortNewest" class="py-1 rounded-lg text-[#8C766B] hover:text-[#2D231E] text-center whitespace-nowrap transition">
+            🌱 新着順
+          </button>
+          <button id="sortRandom" class="py-1 rounded-lg text-[#8C766B] hover:text-[#2D231E] text-center whitespace-nowrap transition">
+            🎲 ランダム
+          </button>
+        </div>
+      </div>
+
+      <!-- プランカード一覧リスト -->
+      <div id="plansContainer" class="space-y-1.5">
+        <!-- JSで動的レンダリング -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 権利帰属注記（一番下に小さく配置） -->
+  <aside class="max-w-md mx-auto px-4 py-2.5 text-center">
+    <p class="text-[9px] text-[#A89488] leading-relaxed">
+      ※投稿内容は企画者（しょうだい）の作品制作やWebメディア等で活用させていただく場合があります。
+    </p>
+  </aside>
+
+  <!-- フッター -->
+  <footer class="w-full bg-[#FAF5F2] border-t border-[#E8DDD5] py-4 px-4 text-center text-xs text-[#8C766B] space-y-2">
+    <div class="flex justify-center items-center space-x-3 text-[10px]">
+      <a href="https://crayonjapan.base.shop/" target="_blank" rel="noopener noreferrer" class="hover:text-[#2D231E] underline">BASEショップ</a>
+      <span>•</span>
+      <a href="privacy.html" class="hover:text-[#2D231E] underline">プライバシーポリシー</a>
+      <span>•</span>
+      <a href="terms.html" class="hover:text-[#2D231E] underline">利用規約</a>
+      <span>•</span>
+      <a href="support.html" class="hover:text-[#2D231E] underline">サポート</a>
+    </div>
+    <p class="text-[9px] text-[#A89488] leading-tight">
+      Created with for<br>お絵描き楽しも委員会（しょうだい）
+    </p>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="app.js?v=20261112v8"></script>
+</body>
+</html>

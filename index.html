@@ -2,10 +2,12 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>理想のデートを15文字でどうぞ。| ふたりの恋のルーレット</title>
   <meta name="description" content="たった15文字で綴る、ふたりだけの愛おしいデート。みんなの理想のデートプランを投稿・投票・ルーレットで決めるWebアプリ。">
   <meta name="theme-color" content="#FAF5F2">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,6 +20,8 @@
       background-color: #FAF5F2;
       color: #382C26;
       -webkit-tap-highlight-color: transparent;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
     }
 
     .font-mincho {
@@ -242,8 +246,14 @@
 
   <!-- フッター -->
   <footer class="w-full bg-[#FAF5F2] border-t border-[#E8DDD5] py-4 px-4 text-center text-xs text-[#8C766B] space-y-2">
-    <div class="flex justify-center items-center space-x-2 text-[10px]">
+    <div class="flex justify-center items-center space-x-3 text-[10px]">
       <a href="https://crayonjapan.base.shop/" target="_blank" rel="noopener noreferrer" class="hover:text-[#2D231E] underline">BASEショップ</a>
+      <span>•</span>
+      <a href="privacy.html" class="hover:text-[#2D231E] underline">プライバシーポリシー</a>
+      <span>•</span>
+      <a href="terms.html" class="hover:text-[#2D231E] underline">利用規約</a>
+      <span>•</span>
+      <a href="support.html" class="hover:text-[#2D231E] underline">サポート</a>
     </div>
     <p class="text-[9px] text-[#A89488] leading-tight">
       Created with for<br>お絵描き楽しも委員会（しょうだい）

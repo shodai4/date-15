@@ -1,0 +1,97 @@
+name: iOS Automated Build & App Store Connect
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'README.md'
+      - 'docs/**'
+
+jobs:
+  build-ios:
+    name: Build iOS App with Xcode 16 on macOS 14
+    runs-on: macos-14
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js (v20)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Setup Python (v3.11)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python Dependencies for Asset Generation
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install Pillow
+
+      - name: Install NPM Dependencies
+        run: |
+          npm ci || npm install
+
+      - name: Generate Apple HIG Icons and Splashes
+        run: |
+          python3 scripts/generate-assets.py
+
+      - name: Build Web Assets into www/
+        run: |
+          npm run build
+
+      - name: Check Xcode Version on Runner
+        run: |
+          xcodebuild -version
+
+      - name: Setup CocoaPods
+        run: |
+          pod --version
+
+      - name: Initialize or Sync Capacitor iOS Project
+        run: |
+          if [ ! -d "ios" ]; then
+            echo "[CI] Adding iOS platform..."
+            npx cap add ios
+          else
+            echo "[CI] Syncing iOS platform..."
+            npx cap sync ios
+          fi
+          node scripts/configure-ios.js
+          node scripts/setup-ios-assets.js
+
+      - name: Clean & Compile iOS App (Xcode Verification)
+        run: |
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace \
+                     -scheme App \
+                     -configuration Release \
+                     -destination "generic/platform=iOS" \
+                     clean build \
+                     CODE_SIGNING_ALLOWED=NO \
+                     COMPILER_INDEX_STORE_ENABLE=NO
+
+      - name: Upload iOS Xcode Project Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: date-15-ios-project
+          path: |
+            ios/App
+            resources/
+            www/
+          retention-days: 7
+
+      - name: Summary Report
+        run: |
+          echo "### iOS Automated Build Succeeded!" >> $GITHUB_STEP_SUMMARY
+          echo "- **App**: 15文字デート (com.oekaki.date15)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Xcode**: $(xcodebuild -version | tr '\n' ' ')" >> $GITHUB_STEP_SUMMARY
+          echo "- **macOS**: $(sw_vers -productVersion)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: Clean compiled successfully without errors." >> $GITHUB_STEP_SUMMARY

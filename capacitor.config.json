@@ -1,0 +1,24 @@
+{
+  "appId": "com.oekaki.date15",
+  "appName": "15文字デート",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https",
+    "iosScheme": "capacitor"
+  },
+  "ios": {
+    "contentInset": "always",
+    "backgroundColor": "#FAF5F2",
+    "preferredContentMode": "mobile"
+  },
+  "plugins": {
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#FAF5F2"
+    },
+    "Keyboard": {
+      "resize": "body",
+      "style": "LIGHT"
+    }
+  }
+}
