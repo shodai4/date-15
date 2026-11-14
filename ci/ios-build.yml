@@ -39,6 +39,10 @@ jobs:
         run: |
           npm ci || npm install
 
+      - name: Run Unit Tests (export compliance / safe area / www sync)
+        run: |
+          npm test
+
       - name: Generate Apple HIG Icons and Splashes
         run: |
           python3 scripts/generate-assets.py
@@ -66,6 +70,11 @@ jobs:
           fi
           node scripts/configure-ios.js
           node scripts/setup-ios-assets.js
+
+      - name: Verify Export Compliance in Generated Info.plist
+        run: |
+          grep -A1 '<key>ITSAppUsesNonExemptEncryption</key>' ios/App/App/Info.plist | grep '<false/>'
+          echo "[CI] ITSAppUsesNonExemptEncryption = false (TestFlight auto-delivery OK)"
 
       - name: Clean & Compile iOS App (Xcode Verification)
         run: |

@@ -41,6 +41,21 @@ date-15/
 
 ---
 
+## 🍎 iOS ビルド & 自動テスト（Mac不要・0円）
+
+```bash
+npm install
+npm test         # 無料の回帰テスト（node:test）。全PASSでOK
+npm run build    # www/ へ Web アセットを同期
+npm run cap:sync # 同期 + Info.plist 自動設定 + アイコン同期（iOSプロジェクトが要る）
+```
+
+- `scripts/configure-ios.js` が `Info.plist` に `ITSAppUsesNonExemptEncryption = false`（輸出コンプライアンス）を **冪等に** 注入します。これが無いと TestFlight のビルドが配信保留になります。
+- `capacitor.config.json` の `ios.contentInset` は `"never"`。セーフエリア（Dynamic Island・ホームインジケータ）の余白は CSS の `env(safe-area-inset-*)` だけで1回だけ確保します。
+- 詳細は `docs/app-store-release-guide.md`。
+
+---
+
 ## 🗄️ Supabase データベース設定（全体共有する場合）
 
 SupabaseのSQLエディタで以下のSQLを実行するだけで、全ユーザー間での投稿といいねがリアルタイム共有されます。

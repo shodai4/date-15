@@ -55,6 +55,41 @@ Xcode上部の再生ボタン（▶）を押すだけで、接続したiPhoneに
 
 ---
 
+## TestFlight で詰まらないための先回り設定（テリトリーウォークの実機検証より）
+
+### 1. 輸出コンプライアンス（ITSAppUsesNonExemptEncryption）
+
+このアプリは HTTPS（Apple の暗号化）を使うだけで、独自の暗号化は実装していません。そのため輸出コンプライアンスは「免除」＝ `ITSAppUsesNonExemptEncryption = false` です。
+
+これを `Info.plist` に入れておかないと、TestFlight にアップロードしたビルドが「輸出コンプライアンス情報がありません」で **配信保留** になり、自動配信されません。
+
+`scripts/configure-ios.js` が `npm run cap:sync` / `npm run ios:config` / `npm run ios:setup` のたびに自動で次を実行します（何度実行しても結果は同じ＝冪等、重複キーは作りません）:
+
+1. `<key>ITSAppUsesNonExemptEncryption</key><false/>` をルートの `<dict>` へ注入
+2. 既に `<true/>` で入っていれば `<false/>` に訂正
+3. 同じキーが複数あれば1件にまとめる
+4. 書き込んだ後に読み直して検証（キー1件・値が `<false/>`・`<dict>` の対応・XML が壊れていないか）
+
+手作業で Info.plist を触る必要はありません。万一 App Store Connect 側で「輸出コンプライアンス」の質問が出た場合も、「独自の暗号化は使っていない（免除対象）」を選べば OK です。
+
+### 2. Dynamic Island / セーフエリア
+
+`capacitor.config.json` の `ios.contentInset` は `"never"`（ネイティブ側で余白を足さない）。余白は CSS だけで1回だけ確保します。
+
+- 上（Dynamic Island・ノッチ）: `header { padding-top: calc(env(safe-area-inset-top, 0px) + 0.5rem) !important; }`
+- 下（ホームインジケータ）: `body { padding-bottom: env(safe-area-inset-bottom); }`
+
+`contentInset` が `"always"` のままだと、ネイティブの余白と CSS の `env(safe-area-inset-top)` が二重にかかり、ヘッダーが不自然に下がります。`"never"` にすることで Web 表示（env = 0px）と見た目が一致します。
+
+### 3. 変更後の確認コマンド（無料・Mac不要）
+
+```bash
+npm test        # 輸出コンプライアンス注入の冪等性・セーフエリア・www同期を検証（全てPASSでOK）
+npm run build   # www/ へ Web アセットを同期
+```
+
+---
+
 ## 整備済みアセット一覧
 
 - `resources/icon.png`: App Store用公式アプリアイコン (1024x1024px, RGB透過なし)
@@ -64,4 +99,5 @@ Xcode上部の再生ボタン（▶）を押すだけで、接続したiPhoneに
 - `privacy.html`: プライバシーポリシー (GitHub Pages公開済み)
 - `terms.html`: 利用規約 (GitHub Pages公開済み)
 - `support.html`: サポート・FAQ窓口 (GitHub Pages公開済み)
-- `ci/ios-build.yml`: macOS 14・Xcode 16自動ビルドCI定義
+- `ci/ios-build.yml`: macOS 14・Xcode 16自動ビルドCI定義（`npm test` → www 同期 → Info.plist 設定 → ビルドの順）
+- `tests/`: Node標準 `node:test` による無料の回帰テスト（`npm test`）

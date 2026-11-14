@@ -20,8 +20,17 @@
       background-color: #FAF5F2;
       color: #382C26;
       -webkit-tap-highlight-color: transparent;
-      padding-top: env(safe-area-inset-top);
+      /* 下（ホームインジケータ）の余白は本文側で1回だけ確保する。
+         上（Dynamic Island / ノッチ）はヘッダー側で確保するので body では足さない。 */
       padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    /* iOS セーフエリア: Capacitor は ios.contentInset: "never" でネイティブ側の
+       余白を足さないため、余白はここ（CSS）で1回だけ確保する。
+       header は sticky なので、スクロールしても白背景がノッチの下まで届くよう
+       余白は body ではなく header の padding として持たせる。 */
+    header {
+      padding-top: calc(env(safe-area-inset-top, 0px) + 0.5rem) !important;
     }
 
     .font-mincho {
