@@ -1,0 +1,222 @@
+name: iOS Automated Build & App Store Connect
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'README.md'
+      - 'docs/**'
+
+jobs:
+  build-ios:
+    name: Build iOS App with Xcode on macOS
+    runs-on: macos-14
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js (v20)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Setup Python (v3.11)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python Dependencies for Asset Generation
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install Pillow
+
+      - name: Install NPM Dependencies
+        run: |
+          npm ci || npm install
+
+      - name: Run Unit Tests
+        run: |
+          npm test
+
+      - name: Generate Apple HIG Icons and Splashes
+        run: |
+          python3 scripts/generate-assets.py
+
+      - name: Build Web Assets into www/
+        run: |
+          npm run build
+
+      - name: Check Xcode & CocoaPods
+        run: |
+          xcodebuild -version
+          pod --version
+
+      - name: Initialize or Sync Capacitor iOS Project
+        run: |
+          if [ ! -d "ios" ]; then
+            npx cap add ios
+          else
+            npx cap sync ios
+          fi
+          node scripts/configure-ios.js
+          node scripts/setup-ios-assets.js
+
+      - name: Pin Google User Messaging Platform 2.x & Re-run pod install
+        run: |
+          cd ios/App
+          printf '%s\n' "import pathlib" "p = pathlib.Path('Podfile')" "s = p.read_text()" "if 'GoogleUserMessagingPlatform' not in s:" "    p.write_text(s.replace('  capacitor_pods\\n', \"  capacitor_pods\\n  pod 'GoogleUserMessagingPlatform', '~> 2.1'\\n\", 1))" > /tmp/pin_ump.py
+          python3 /tmp/pin_ump.py
+          rm -f Podfile.lock
+          pod install
+
+      - name: Verify Export Compliance & AdMob Configuration
+        run: |
+          grep -A1 '<key>ITSAppUsesNonExemptEncryption</key>' ios/App/App/Info.plist | grep '<false/>'
+          grep -A1 '<key>GADApplicationIdentifier</key>' ios/App/App/Info.plist | grep 'ca-app-pub-5739782559889389~9293414856'
+          grep -q '<key>NSUserTrackingUsageDescription</key>' ios/App/App/Info.plist
+          grep -q '<key>SKAdNetworkItems</key>' ios/App/App/Info.plist
+          test -f www/admob.js
+          grep -q 'ca-app-pub-5739782559889389/5354169841' www/config.js
+          grep -q 'CapacitorCommunityAdmob' ios/App/Podfile.lock
+
+      - name: Clean & Compile iOS App (Xcode Verification)
+        run: |
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            clean build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            COMPILER_INDEX_STORE_ENABLE=NO
+
+      - name: Check App Store Connect API Key & Release Status
+        id: check_keys
+        env:
+          API_KEY_P8: ${{ secrets.APP_STORE_CONNECT_API_KEY_P8 }}
+          KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          MISSING=""
+          if [ -z "$API_KEY_P8" ]; then MISSING="$MISSING APP_STORE_CONNECT_API_KEY_P8"; fi
+          if [ -z "$KEY_ID" ]; then MISSING="$MISSING APP_STORE_CONNECT_KEY_ID"; fi
+          if [ -z "$ISSUER_ID" ]; then MISSING="$MISSING APP_STORE_CONNECT_ISSUER_ID"; fi
+          if [ -z "$TEAM_ID" ]; then MISSING="$MISSING APPLE_TEAM_ID"; fi
+          if [ -z "$MISSING" ]; then
+            echo "has_keys=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_keys=false" >> "$GITHUB_OUTPUT"
+            echo "Missing:$MISSING"
+          fi
+
+      - name: Install App Store Connect API Key (.p8)
+        if: steps.check_keys.outputs.has_keys == 'true'
+        env:
+          API_KEY_P8: ${{ secrets.APP_STORE_CONNECT_API_KEY_P8 }}
+          KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+        run: |
+          KEY_DIR="$HOME/.appstoreconnect/private_keys"
+          mkdir -p "$KEY_DIR"
+          KEY_PATH="$KEY_DIR/AuthKey_${KEY_ID}.p8"
+          printf '%s\n' "$API_KEY_P8" > "$KEY_PATH"
+          chmod 600 "$KEY_PATH"
+          printf '%s\n' "$API_KEY_P8" > "$RUNNER_TEMP/AuthKey_${KEY_ID}.p8"
+          chmod 600 "$RUNNER_TEMP/AuthKey_${KEY_ID}.p8"
+          echo "KEY_PATH=$RUNNER_TEMP/AuthKey_${KEY_ID}.p8" >> "$GITHUB_ENV"
+
+      - name: Archive iOS App (Unsigned for Cloud Signing at Export)
+        if: steps.check_keys.outputs.has_keys == 'true'
+        run: |
+          cd ios/App
+          rm -rf "$RUNNER_TEMP/Date15.xcarchive"
+          xcodebuild -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/Date15.xcarchive" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$KEY_PATH" \
+            -authenticationKeyID "${{ secrets.APP_STORE_CONNECT_KEY_ID }}" \
+            -authenticationKeyIssuerID "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" \
+            archive \
+            DEVELOPMENT_TEAM="${{ secrets.APPLE_TEAM_ID }}" \
+            CURRENT_PROJECT_VERSION="${{ github.run_number }}" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=""
+
+      - name: Generate ExportOptions.plist
+        if: steps.check_keys.outputs.has_keys == 'true'
+        run: |
+          {
+            echo '<?xml version="1.0" encoding="UTF-8"?>'
+            echo '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">'
+            echo '<plist version="1.0">'
+            echo '<dict>'
+            echo '  <key>method</key>'
+            echo '  <string>app-store-connect</string>'
+            echo '  <key>teamID</key>'
+            echo '  <string>${{ secrets.APPLE_TEAM_ID }}</string>'
+            echo '  <key>signingStyle</key>'
+            echo '  <string>automatic</string>'
+            echo '  <key>destination</key>'
+            echo '  <string>export</string>'
+            echo '  <key>manageAppVersionAndBuildNumber</key>'
+            echo '  <true/>'
+            echo '  <key>uploadSymbols</key>'
+            echo '  <true/>'
+            echo '  <key>stripSwiftSymbols</key>'
+            echo '  <true/>'
+            echo '</dict>'
+            echo '</plist>'
+          } > "$RUNNER_TEMP/ExportOptions.plist"
+          plutil -lint "$RUNNER_TEMP/ExportOptions.plist"
+
+      - name: Export IPA for App Store Connect
+        if: steps.check_keys.outputs.has_keys == 'true'
+        run: |
+          rm -rf "$RUNNER_TEMP/export"
+          mkdir -p "$RUNNER_TEMP/export"
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/Date15.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -exportPath "$RUNNER_TEMP/export" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$KEY_PATH" \
+            -authenticationKeyID "${{ secrets.APP_STORE_CONNECT_KEY_ID }}" \
+            -authenticationKeyIssuerID "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}"
+
+      - name: Upload IPA to TestFlight
+        id: upload
+        if: steps.check_keys.outputs.has_keys == 'true'
+        run: |
+          IPA_PATH=$(ls -1 "$RUNNER_TEMP/export/"*.ipa 2>/dev/null | head -n 1 || true)
+          test -n "$IPA_PATH"
+          if xcrun altool --upload-app -f "$IPA_PATH" -t ios \
+               --apiKey "${{ secrets.APP_STORE_CONNECT_KEY_ID }}" \
+               --apiIssuer "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" \
+               > "$RUNNER_TEMP/upload.log" 2>&1; then
+            echo "upload_status=success" >> "$GITHUB_OUTPUT"
+            cat "$RUNNER_TEMP/upload.log"
+          else
+            cat "$RUNNER_TEMP/upload.log" || true
+            xcrun iTMSTransporter -m upload -assetFile "$IPA_PATH" \
+              -apiKey "${{ secrets.APP_STORE_CONNECT_KEY_ID }}" \
+              -apiIssuer "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" \
+              -v informational
+            echo "upload_status=success_transporter" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Cleanup API Key Files
+        if: always()
+        run: |
+          rm -rf "$HOME/.appstoreconnect/private_keys"
+          rm -f "$RUNNER_TEMP"/AuthKey_*.p8
+          rm -f "$RUNNER_TEMP/upload.log" 2>/dev/null || true
