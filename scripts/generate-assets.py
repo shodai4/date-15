@@ -19,8 +19,102 @@ APPICON_DIR = os.path.join(RES_DIR, 'AppIcon.appiconset')
 os.makedirs(RES_DIR, exist_ok=True)
 os.makedirs(APPICON_DIR, exist_ok=True)
 
-FONT_JP = '/usr/share/fonts/opentype/ipafont-gothic/ipag.ttf'
-FONT_EN = '/usr/share/fonts/truetype/freefont/FreeSansBold.ttf'
+FONT_DIR = os.path.join(RES_DIR, 'fonts')
+
+# Bundled subsets (Noto Sans JP, SIL OFL) so generation is identical on every OS.
+BUNDLED_FONT_JP = os.path.join(FONT_DIR, 'NotoSansJP-Regular-subset.ttf')
+BUNDLED_FONT_BOLD = os.path.join(FONT_DIR, 'NotoSansJP-Bold-subset.ttf')
+
+# System fallbacks, used only when the bundled files are missing or lack a glyph.
+# macOS runners and macOS desktops keep Hiragino in /System/Library/Fonts.
+SYSTEM_FONT_JP = [
+    '/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc',
+    '/System/Library/Fonts/ヒラギノ角ゴシック W6.ttc',
+    '/System/Library/Fonts/ヒラギノ角ゴシック W2.ttc',
+    '/System/Library/Fonts/ヒラギノ丸ゴ ProN W4.ttc',
+    '/System/Library/Fonts/ヒラギノ明朝 ProN.ttc',
+    '/System/Library/Fonts/Hiragino Sans GB.ttc',
+    '/System/Library/Fonts/Supplemental/Arial Unicode.ttf',
+    '/usr/share/fonts/opentype/ipafont-gothic/ipag.ttf',
+    '/usr/share/fonts/opentype/ipaexfont-gothic/ipaexg.ttf',
+    '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc',
+    '/usr/share/fonts/truetype/fonts-japanese-gothic.ttf',
+    '/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc',
+]
+SYSTEM_FONT_LATIN_BOLD = [
+    '/System/Library/Fonts/Supplemental/Arial Bold.ttf',
+    '/System/Library/Fonts/Supplemental/Arial Black.ttf',
+    '/usr/share/fonts/truetype/freefont/FreeSansBold.ttf',
+    '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf',
+]
+
+FONT_CACHE = {}
+
+
+def _glyph_bitmap(font, ch):
+    mask = font.getmask(ch)
+    return (mask.size, bytes(mask))
+
+
+def _glyph_missing(font, text):
+    """Return the characters of `text` that the font renders as .notdef (tofu)."""
+    try:
+        notdef = _glyph_bitmap(font, '\ue000')  # private-use char: never mapped
+    except Exception as exc:  # coverage check unavailable: trust the font
+        print(f"[Font] Coverage check unavailable ({exc}); assuming the font is complete")
+        return []
+    missing = []
+    for ch in text:
+        if ch.isspace():
+            continue
+        try:
+            if _glyph_bitmap(font, ch) == notdef:
+                missing.append(ch)
+        except Exception:
+            missing.append(ch)
+    return missing
+
+
+def get_font(size, text='', bold=False):
+    """Load the first font that exists and can draw every character of `text`."""
+    key = (size, text, bold)
+    if key in FONT_CACHE:
+        return FONT_CACHE[key]
+
+    candidates = [BUNDLED_FONT_BOLD if bold else BUNDLED_FONT_JP]
+    if bold:
+        candidates += SYSTEM_FONT_LATIN_BOLD
+    candidates += SYSTEM_FONT_JP
+
+    opened = None
+    for path in candidates:
+        if not path or not os.path.exists(path):
+            continue
+        try:
+            font = ImageFont.truetype(path, size)
+        except OSError as exc:
+            print(f"[Font] Cannot open {path}: {exc}")
+            continue
+        if opened is None:
+            opened = (path, font)
+        missing = _glyph_missing(font, text)
+        if not missing:
+            FONT_CACHE[key] = font
+            return font
+        print(f"[Font] {os.path.basename(path)} lacks {''.join(missing)!r}; trying next font")
+
+    if opened is not None:
+        print(f"[Font] WARNING: falling back to {opened[0]}; some glyphs may show as boxes")
+        FONT_CACHE[key] = opened[1]
+        return opened[1]
+
+    print("[Font] WARNING: no usable font file found; using Pillow's built-in bitmap font")
+    try:
+        font = ImageFont.load_default(size=size)
+    except TypeError:
+        font = ImageFont.load_default()
+    FONT_CACHE[key] = font
+    return font
 
 def create_app_icon():
     size = 1024
@@ -77,20 +171,20 @@ def create_app_icon():
             )
             
     # Center character inside manuscript grid
-    font_grid = ImageFont.truetype(FONT_JP, 48)
+    font_grid = get_font(48, '恋')
     draw.text((gx0 + 2 * cell_w + 18, gy0 + 1 * cell_h + 16), "恋", fill=(226, 109, 109), font=font_grid)
     
     # Bold "15" Logo in center
-    font_num = ImageFont.truetype(FONT_EN, 230)
     num_text = "15"
+    font_num = get_font(230, num_text, bold=True)
     num_bbox = draw.textbbox((0, 0), num_text, font=font_num)
     num_w = num_bbox[2] - num_bbox[0]
     num_x = (size - num_w) // 2
     draw.text((num_x, 480), num_text, fill=(56, 44, 38), font=font_num) # #382C26
     
     # Japanese Subtitle "文字デート"
-    font_sub = ImageFont.truetype(FONT_JP, 84)
     sub_text = "文字デート"
+    font_sub = get_font(84, sub_text)
     sub_bbox = draw.textbbox((0, 0), sub_text, font=font_sub)
     sub_w = sub_bbox[2] - sub_bbox[0]
     sub_x = (size - sub_w) // 2
@@ -123,15 +217,15 @@ def create_splash_screen(icon_img):
     splash.paste(icon_scaled, (icon_x, icon_y))
     
     # App title below
-    font_title = ImageFont.truetype(FONT_JP, 96)
     title = "理想のデートを15文字でどうぞ。"
+    font_title = get_font(96, title)
     t_bbox = draw.textbbox((0, 0), title, font=font_title)
     t_w = t_bbox[2] - t_bbox[0]
     draw.text(((size - t_w) // 2, icon_y + 760), title, fill=(56, 44, 38), font=font_title)
     
     # Subtitle
-    font_sub = ImageFont.truetype(FONT_JP, 48)
     sub = "たった15文字で綴る、ふたりだけの愛おしい日常。"
+    font_sub = get_font(48, sub)
     s_bbox = draw.textbbox((0, 0), sub, font=font_sub)
     s_w = s_bbox[2] - s_bbox[0]
     draw.text(((size - s_w) // 2, icon_y + 880), sub, fill=(194, 125, 102), font=font_sub)
