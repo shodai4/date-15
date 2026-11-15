@@ -74,10 +74,40 @@ test('CSS: body の下余白は env(safe-area-inset-bottom) の1回だけ', () =
     assert.equal((HTML.match(/padding-bottom:\s*env\(safe-area-inset-bottom\)/g) || []).length, 1, '下余白の二重指定はしない');
 });
 
-test('HTML: 画面下に固定表示する要素が無い（固定UIの被りが起きない）', () => {
-    assert.doesNotMatch(HTML, /class="[^"]*\bfixed\s+bottom-0/, '下部固定バーは無い');
+test('HTML: Web版には画面下固定UIを出さない（タブバーはネイティブのタブ表示時だけ）', () => {
+    assert.doesNotMatch(HTML, /class="[^"]*\bfixed\s+bottom-0/, 'Tailwind の fixed bottom-0 で下部固定しない');
+    const tabbar = ruleBody('.date15-tabbar');
+    assert.match(tabbar, /display:\s*none;/, '既定は非表示（Web版は今の1ページ表示のまま）');
+    assert.match(
+        HTML,
+        /html\[data-date15-tabs="true"\]\s+\.date15-tabbar\s*\{\s*display:\s*flex;/,
+        'ネイティブのタブ表示時だけ出す'
+    );
     const appJs = read('app.js');
     assert.doesNotMatch(appJs, /position:\s*fixed/, 'JS から下部固定UIを作らない');
+});
+
+test('CSS: 下部タブバーは AdMob バナーの上（bottom = バナー高さ + 下セーフエリア）', () => {
+    const tabbar = ruleBody('.date15-tabbar');
+    assert.match(
+        tabbar,
+        /bottom:\s*calc\(var\(--date15-banner-offset, 0px\) \+ env\(safe-area-inset-bottom\)\)/,
+        'バナー高さ＋セーフエリアの上に置く'
+    );
+    assert.match(tabbar, /height:\s*var\(--date15-tabbar-height, 58px\)/);
+});
+
+test('CSS: タブ表示中の本文の下余白はタブバー＋セーフエリア＋バナー分を確保する', () => {
+    assert.match(
+        HTML,
+        /html\[data-date15-tabs="true"\] body \{[^}]*padding-bottom:\s*calc\([^}]*--date15-tabbar-height[^}]*env\(safe-area-inset-bottom\)[^}]*--date15-banner-offset/s,
+        '固定UIの高さを本文の下余白で1回だけ確保する'
+    );
+    assert.match(
+        HTML,
+        /body\[data-native-banner="true"\] \{[^}]*--date15-banner-offset:\s*var\(--admob-banner-height, 50px\)/s,
+        'AdMob が実測したバナー高さを共通の基準にする'
+    );
 });
 
 /* ------------------------------------------------------------------ *
@@ -92,7 +122,7 @@ test('互換: Web では env(safe-area-inset-top) が 0px になり従来の余�
  * 5. ビルド成果物（www/）の同期
  * ------------------------------------------------------------------ */
 test('ビルド: www/ の各ファイルがルートと一致する', () => {
-    const files = ['index.html', 'app.js', 'config.js', 'privacy.html', 'terms.html', 'support.html'];
+    const files = ['index.html', 'app.js', 'tabs.js', 'config.js', 'privacy.html', 'terms.html', 'support.html'];
     files.forEach((file) => {
         const wwwPath = path.join(ROOT, 'www', file);
         assert.ok(fs.existsSync(wwwPath), `www/${file} が存在する`);

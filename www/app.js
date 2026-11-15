@@ -306,6 +306,13 @@
     updateRouletteCount();
 
     alert('素敵なデートプランを投稿しました！💕');
+
+    // iPhoneアプリのタブ表示では、投稿したプランをそのまま見られるよう「一覧」へ移る
+    const tabsApi = window.Date15Tabs;
+    if (tabsApi && typeof tabsApi.isTabMode === 'function' && tabsApi.isTabMode()
+      && typeof tabsApi.showTab === 'function') {
+      tabsApi.showTab('list');
+    }
   }
 
   // ==========================================
@@ -508,12 +515,32 @@
   }
 
   // ==========================================
+  // 8.6 iPhoneアプリだけの3タブ表示と起動時のルール説明
+  // ==========================================
+  // Webブラウザでは何もせず、今の1ページ縦長表示のまま。
+  // 初回起動のルール説明を閉じてから広告（ATTのダイアログ）を出し、
+  // 起動直後に「ルール説明」と「ATT」の2枚が重ならないようにする。
+  function initTabsAndRules() {
+    try {
+      const tabsApi = window.Date15Tabs;
+      if (!tabsApi || typeof tabsApi.init !== 'function') return { autoShown: false };
+      return tabsApi.init({ onRulesClosed: initAdMobBanner }) || { autoShown: false };
+    } catch (err) {
+      console.warn('[Tabs] 3タブ表示の初期化に失敗しました（表示は従来どおり）:', err);
+      return { autoShown: false };
+    }
+  }
+
+  // ==========================================
   // 9. イベントリスナー初期化
   // ==========================================
   window.addEventListener('DOMContentLoaded', () => {
     initCharGrid();
     loadData();
-    initAdMobBanner();
+
+    // iPhoneアプリだけ：3タブ表示＋初回起動のルール説明（Web版は何もしない）
+    const ui = initTabsAndRules();
+    if (!ui || !ui.autoShown) initAdMobBanner();
 
     const planInput = document.getElementById('planInput');
     if (planInput) {

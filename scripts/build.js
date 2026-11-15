@@ -20,6 +20,7 @@ const COPY_FILES = [
   'index.html',
   'app.js',
   'admob.js',
+  'tabs.js',
   'config.js',
   'privacy.html',
   'terms.html',

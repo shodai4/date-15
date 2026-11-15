@@ -94,6 +94,146 @@
       50% { transform: scale(1.3); }
       100% { transform: scale(1); }
     }
+
+    /* ============================================================
+       iPhoneアプリ（Capacitor ネイティブ）だけの3タブ表示と
+       起動時のルール説明。
+       Webブラウザでは html[data-date15-tabs="true"] が付かないので、
+       今の1ページ縦長表示のまま一切変わりません。
+       ============================================================ */
+
+    /* 下部タブバーの高さ（tabs.js の DEFAULT_TABBAR_HEIGHT と揃える） */
+    :root {
+      --date15-tabbar-height: 58px;
+      --date15-banner-offset: 0px;
+    }
+
+    /* AdMob バナーが出ているときは、その高さを「タブバー」と「本文の下余白」の
+       共通の基準にする。実測値は admob.js が --admob-banner-height に入れる。 */
+    body[data-native-banner="true"] {
+      --date15-banner-offset: var(--admob-banner-height, 50px);
+    }
+
+    /* 本文の下余白＝タブバー＋ホームインジケータ＋AdMobバナー。
+       固定UIの高さは必ずここで1回だけ確保し、本文に被らせない。 */
+    html[data-date15-tabs="true"] body {
+      padding-bottom: calc(
+        var(--date15-tabbar-height, 58px) + env(safe-area-inset-bottom) + var(--date15-banner-offset, 0px)
+      );
+    }
+
+    /* 下部タブバー：AdMobバナーの【上】に固定する
+       （bottom = バナー高さ + 下セーフエリア） */
+    .date15-tabbar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: calc(var(--date15-banner-offset, 0px) + env(safe-area-inset-bottom));
+      z-index: 40;
+      display: none;
+      height: var(--date15-tabbar-height, 58px);
+      background: rgba(255, 255, 255, 0.97);
+      border-top: 1px solid #E8DDD5;
+      box-shadow: 0 -2px 10px rgba(56, 44, 38, 0.06);
+    }
+    html[data-date15-tabs="true"] .date15-tabbar {
+      display: flex;
+      align-items: stretch;
+    }
+    .date15-tab {
+      flex: 1 1 0%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      margin: 6px 3px;
+      padding: 0;
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+      color: #A89488;
+      font-size: 10px;
+      font-weight: 700;
+      line-height: 1.1;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+    .date15-tab .date15-tab-icon {
+      font-size: 18px;
+      line-height: 1;
+    }
+    .date15-tab[aria-selected="true"] {
+      color: #C27D66;
+      background: #FAF5F2;
+    }
+
+    /* ヘッダーの「？」（ルール説明を開く）は iPhoneアプリのときだけ出す。
+       hidden 属性や hidden クラスは Tailwind の display に負けるため CSS で切り替える。 */
+    .date15-rules-open {
+      display: none;
+    }
+    html[data-date15-tabs="true"] .date15-rules-open {
+      display: flex;
+    }
+
+    /* 短いタブ（ルーレット・投稿）は画面の中ほどに置いて、下に大きな空白を作らない。
+       一覧のように長いタブは高さが足りなくなるので、そのまま上から流す。 */
+    html[data-date15-tabs="true"] main {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    html[data-date15-tabs="true"] main > section {
+      flex: 0 0 auto;
+    }
+
+    /* タブ表示中は、そのタブのセクションだけを出す */
+    html[data-date15-tabs="true"] main > section[hidden] {
+      display: none;
+    }
+    /* タブ表示中は、いちばん下の注記・フッターはタブバーと重なるので隠す
+       （プライバシーポリシー等のリンクはルール説明の中に置く） */
+    html[data-date15-tabs="true"] aside,
+    html[data-date15-tabs="true"] footer {
+      display: none;
+    }
+
+    /* ルール説明（初回起動時に自動表示・「？」ボタンからいつでも再表示） */
+    .date15-rules-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: calc(env(safe-area-inset-top, 0px) + 14px) 14px calc(env(safe-area-inset-bottom, 0px) + 14px);
+      background: rgba(45, 35, 30, 0.45);
+      overflow-y: auto;
+    }
+    .date15-rules-overlay.is-open {
+      display: flex;
+    }
+    .date15-rules-card {
+      width: 100%;
+      max-width: 344px;
+      max-height: 100%;
+      overflow-y: auto;
+      background: #FFFFFF;
+      border-radius: 20px;
+      padding: 16px;
+      box-shadow: 0 18px 40px rgba(45, 35, 30, 0.22);
+    }
+    .date15-rules-item {
+      display: flex;
+      gap: 8px;
+      padding: 9px 10px;
+      border-radius: 12px;
+      background: #FAF5F2;
+      border: 1px solid #E8DDD5;
+    }
+    .date15-rules-item + .date15-rules-item {
+      margin-top: 6px;
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between selection:bg-rose-100 selection:text-rose-900">
@@ -113,6 +253,9 @@
         </div>
       </div>
 
+      <button id="btnOpenRules" type="button" aria-label="あそびかた（ルール）を見る" title="あそびかた"
+        class="date15-rules-open shrink-0 ml-2 w-7 h-7 rounded-full border border-[#D8C8BF] bg-[#FAF5F2] text-[#8C766B] text-xs font-bold items-center justify-center transition active:scale-95">？</button>
+
     </div>
   </header>
 
@@ -120,7 +263,7 @@
   <main class="max-w-md w-full mx-auto px-3.5 py-3.5 flex-1 space-y-3.5">
 
     <!-- ① 今日のデートルーレット（一番上に配置＆高さをスリム化！） -->
-    <section class="bg-white rounded-2xl p-3 sm:p-3.5 border border-[#E8DDD5] shadow-xs relative overflow-hidden">
+    <section data-date15-panel="roulette" class="bg-white rounded-2xl p-3 sm:p-3.5 border border-[#E8DDD5] shadow-xs relative overflow-hidden">
       <div class="flex items-center justify-between mb-1.5">
         <div class="flex items-center space-x-1.5">
           <span class="text-sm">🎲</span>
@@ -157,7 +300,7 @@
     </section>
 
     <!-- ② 15文字ピッタリ投稿フォーム -->
-    <section class="bg-white rounded-2xl p-3.5 border border-[#E8DDD5] shadow-xs space-y-2.5">
+    <section data-date15-panel="post" class="bg-white rounded-2xl p-3.5 border border-[#E8DDD5] shadow-xs space-y-2.5">
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-1.5 min-w-0">
           <span class="text-sm shrink-0">💌</span>
@@ -224,7 +367,7 @@
     </section>
 
     <!-- ③ みんなのデートプラン & いいねランキング -->
-    <section class="space-y-2">
+    <section data-date15-panel="list" class="space-y-2">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
         <div class="flex items-center space-x-1.5">
           <span class="text-sm">🏆</span>
@@ -278,8 +421,78 @@
     </p>
   </footer>
 
+  <!-- 下部タブバー（iPhoneアプリだけ表示。Web版は display:none のまま） -->
+  <nav class="date15-tabbar" aria-label="画面切り替え">
+    <button type="button" class="date15-tab" data-date15-tab="roulette" aria-selected="true">
+      <span class="date15-tab-icon">🎲</span>
+      <span>ルーレット</span>
+    </button>
+    <button type="button" class="date15-tab" data-date15-tab="post" aria-selected="false">
+      <span class="date15-tab-icon">💌</span>
+      <span>投稿する</span>
+    </button>
+    <button type="button" class="date15-tab" data-date15-tab="list" aria-selected="false">
+      <span class="date15-tab-icon">🏆</span>
+      <span>一覧</span>
+    </button>
+  </nav>
+
+  <!-- ルール説明（iPhoneアプリ：初回起動時に自動表示・「？」ボタンからいつでも再表示） -->
+  <div id="date15RulesOverlay" class="date15-rules-overlay" role="dialog" aria-modal="true" aria-labelledby="date15RulesTitle" aria-hidden="true">
+    <div class="date15-rules-card">
+      <div class="flex items-start justify-between">
+        <div>
+          <h2 id="date15RulesTitle" class="text-sm font-bold text-[#2D231E] font-mincho">あそびかた</h2>
+          <p class="text-[10px] text-[#8C766B] mt-0.5">理想のデートを15文字で集めて、ルーレットで決めるアプリです。</p>
+        </div>
+        <button id="btnCloseRulesX" type="button" aria-label="閉じる" class="shrink-0 ml-2 w-7 h-7 rounded-full bg-[#FAF5F2] border border-[#E8DDD5] text-[#8C766B] text-xs flex items-center justify-center active:scale-95 transition">✕</button>
+      </div>
+
+      <div class="mt-3">
+        <div class="date15-rules-item">
+          <span class="text-base leading-none shrink-0">🎲</span>
+          <div class="min-w-0">
+            <p class="text-[11px] font-bold text-[#2D231E]">ルーレット</p>
+            <p class="text-[10px] text-[#6E564B] leading-relaxed">みんなが投稿したデートプランを、ランダムで1つ引けます。結果はXでシェアしたり、いいねもできます。</p>
+          </div>
+        </div>
+        <div class="date15-rules-item">
+          <span class="text-base leading-none shrink-0">💌</span>
+          <div class="min-w-0">
+            <p class="text-[11px] font-bold text-[#2D231E]">投稿する</p>
+            <p class="text-[10px] text-[#6E564B] leading-relaxed">理想のデートプランを、ぴったり15文字で投稿できます。15文字ちょうどでないと投稿できません（空白は使えません）。</p>
+          </div>
+        </div>
+        <div class="date15-rules-item">
+          <span class="text-base leading-none shrink-0">🏆</span>
+          <div class="min-w-0">
+            <p class="text-[11px] font-bold text-[#2D231E]">一覧</p>
+            <p class="text-[10px] text-[#6E564B] leading-relaxed">人気順・新着順・ランダムで、みんなのプランを見たり「いいね」したりできます。</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="text-[9px] text-[#A89488] leading-relaxed mt-3">
+        ※投稿内容は企画者（しょうだい）の作品制作やWebメディア等で活用させていただく場合があります。
+      </p>
+
+      <button id="btnCloseRules" type="button" class="mt-3 w-full py-2.5 px-4 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-[#E26D6D] to-[#D65D5D] active:scale-[0.99] shadow-xs transition flex items-center justify-center space-x-1.5">
+        <span>はじめる</span>
+      </button>
+
+      <div class="mt-2 flex justify-center items-center space-x-2 text-[9px] text-[#8C766B]">
+        <a href="privacy.html" class="underline">プライバシーポリシー</a>
+        <span>•</span>
+        <a href="terms.html" class="underline">利用規約</a>
+        <span>•</span>
+        <a href="support.html" class="underline">サポート</a>
+      </div>
+    </div>
+  </div>
+
   <script src="config.js"></script>
   <script src="admob.js?v=20261115v1"></script>
-  <script src="app.js?v=20261115v9"></script>
+  <script src="tabs.js?v=20261116v1"></script>
+  <script src="app.js?v=20261116v1"></script>
 </body>
 </html>
