@@ -492,11 +492,28 @@
   }
 
   // ==========================================
+  // 8.5 画面下部のバナー広告（AdMob / iOSネイティブのみ）
+  // ==========================================
+  // Web ブラウザでは admob.js 側が何もせず、エラーも出さない。
+  // 呼び出しでアプリ本体が止まらないよう、必ず try で包む。
+  function initAdMobBanner() {
+    try {
+      const api = window.Date15AdMob;
+      if (!api || typeof api.AdMobManager !== 'function') return;
+      const adMob = new api.AdMobManager();
+      window.date15AdMob = adMob;
+    } catch (err) {
+      console.warn('[AdMob] 初期化に失敗しました（アプリの動作には影響ありません）:', err);
+    }
+  }
+
+  // ==========================================
   // 9. イベントリスナー初期化
   // ==========================================
   window.addEventListener('DOMContentLoaded', () => {
     initCharGrid();
     loadData();
+    initAdMobBanner();
 
     const planInput = document.getElementById('planInput');
     if (planInput) {

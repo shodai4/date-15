@@ -1,0 +1,10 @@
+# 依存パッケージ（npm ci / npm install で再生成）
+node_modules/
+
+# Capacitor が生成するネイティブプロジェクト（CI が npx cap add ios で作る）
+ios/
+android/
+
+# macOS / エディタ
+.DS_Store
+*.log

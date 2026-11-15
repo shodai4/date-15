@@ -25,6 +25,15 @@
       padding-bottom: env(safe-area-inset-bottom);
     }
 
+    /* AdMob ネイティブバナー（iOS）表示中の下部余白。
+       ネイティブのバナーは WebView の上に重なるので、その高さぶん本文の下に
+       余白を空けないと投稿ボタン・フッターがバナーの下に隠れてタップできなくなる。
+       高さは admob.js が --admob-banner-height に実測値を入れる（未取得時は 50px）。
+       Web ブラウザでは data-native-banner が付かないので、この余白は 0 のまま。 */
+    body[data-native-banner="true"] {
+      padding-bottom: calc(var(--admob-banner-height, 50px) + env(safe-area-inset-bottom));
+    }
+
     /* iOS セーフエリア: Capacitor は ios.contentInset: "never" でネイティブ側の
        余白を足さないため、余白はここ（CSS）で1回だけ確保する。
        header は sticky なので、スクロールしても白背景がノッチの下まで届くよう
@@ -270,6 +279,7 @@
   </footer>
 
   <script src="config.js"></script>
-  <script src="app.js?v=20261112v8"></script>
+  <script src="admob.js?v=20261115v1"></script>
+  <script src="app.js?v=20261115v9"></script>
 </body>
 </html>

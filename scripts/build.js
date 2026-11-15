@@ -19,6 +19,7 @@ if (!fs.existsSync(WWW_DIR)) {
 const COPY_FILES = [
   'index.html',
   'app.js',
+  'admob.js',
   'config.js',
   'privacy.html',
   'terms.html',

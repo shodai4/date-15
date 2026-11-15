@@ -84,9 +84,22 @@ Xcode上部の再生ボタン（▶）を押すだけで、接続したiPhoneに
 ### 3. 変更後の確認コマンド（無料・Mac不要）
 
 ```bash
-npm test        # 輸出コンプライアンス注入の冪等性・セーフエリア・www同期を検証（全てPASSでOK）
+npm test        # 輸出コンプライアンス注入の冪等性・セーフエリア・AdMob設定・www同期を検証（全てPASSでOK）
 npm run build   # www/ へ Web アセットを同期
 ```
+
+### 4. 画面下部のバナー広告（Google AdMob）
+
+| 項目 | 値 |
+| --- | --- |
+| アプリ名（AdMob） | 15文字デート（iOS） |
+| アプリID（`GADApplicationIdentifier`） | `ca-app-pub-5739782559889389~9293414856` |
+| バナー広告ユニット（`15文字デート_バナー`） | `ca-app-pub-5739782559889389/5354169841` |
+
+- 表示は `BOTTOM_CENTER` / `ADAPTIVE_BANNER`（画面下端に常時表示）。ネイティブのバナーは WebView の上に重なるため、`admob.js` が実際のバナー高さを `--admob-banner-height` に入れ、`body[data-native-banner="true"]` が「バナー高さ＋下セーフエリア」の余白を作ります（投稿ボタン・フッターが隠れない）。
+- **テスト広告 / 本番広告の切り替えは `config.js` の1行だけ**：`ADMOB.USE_TEST_ADS: true`（TestFlight 実機テスト中＝Google 公式テスト広告）→ 提出直前に `false`（本番広告）。`isTesting` を必ずリクエストに載せているので、テスト中の自分のクリックが「無効トラフィック」判定になる心配はありません。
+- 初回起動時に ATT（トラッキング許可）のダイアログが1回だけ出ます。拒否されても広告は非パーソナライズで配信され、アプリの全機能は変わりません。
+- プライバシーポリシー（`privacy.html`）に広告配信の節を追記済み。App Store Connect の「App のプライバシー」では **トラッキング「はい」**（識別子: 広告データ）を選択してください。
 
 ---
 

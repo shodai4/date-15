@@ -35,7 +35,8 @@
 date-15/
 ├── index.html     # メインUI（原稿用紙風15マス・スロットルーレット・ランキング）
 ├── app.js         # 15文字検証・Supabase連携・ルーレット・いいねロジック
-├── config.js      # Supabase接続設定（URL & Anon Key）
+├── admob.js       # 画面下部の常時バナー広告（AdMob / iOSネイティブのみ）
+├── config.js      # Supabase接続設定（URL & Anon Key）＋ AdMob のIDとテスト切替
 └── README.md      # プロジェクト解説 & Supabase SQL定義
 ```
 
@@ -50,7 +51,8 @@ npm run build    # www/ へ Web アセットを同期
 npm run cap:sync # 同期 + Info.plist 自動設定 + アイコン同期（iOSプロジェクトが要る）
 ```
 
-- `scripts/configure-ios.js` が `Info.plist` に `ITSAppUsesNonExemptEncryption = false`（輸出コンプライアンス）を **冪等に** 注入します。これが無いと TestFlight のビルドが配信保留になります。
+- `scripts/configure-ios.js` が `Info.plist` に `ITSAppUsesNonExemptEncryption = false`（輸出コンプライアンス）と、AdMob の `GADApplicationIdentifier` / `NSUserTrackingUsageDescription` / `SKAdNetworkItems` を **冪等に** 注入します。輸出コンプライアンスが無いと TestFlight のビルドが配信保留になります。
+- 画面下部のバナー広告は `admob.js`（iOSネイティブのみ・Webブラウザでは何もしない）。テスト広告／本番広告の切り替えは `config.js` の `ADMOB.USE_TEST_ADS` **1行だけ** です（提出直前に `false`）。
 - `capacitor.config.json` の `ios.contentInset` は `"never"`。セーフエリア（Dynamic Island・ホームインジケータ）の余白は CSS の `env(safe-area-inset-*)` だけで1回だけ確保します。
 - 詳細は `docs/app-store-release-guide.md`。
 

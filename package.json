@@ -17,6 +17,7 @@
     "ios:verify": "npm test"
   },
   "dependencies": {
+    "@capacitor-community/admob": "6.2.0",
     "@capacitor/core": "^6.2.0",
     "@capacitor/ios": "^6.2.0"
   },

@@ -314,3 +314,92 @@ test('配線: App Store 提出手順書が輸出コンプライアンスの自�
     const guide = fs.readFileSync(path.join(ROOT, 'docs', 'app-store-release-guide.md'), 'utf8');
     assert.match(guide, /ITSAppUsesNonExemptEncryption/);
 });
+
+/* ------------------------------------------------------------------ *
+ * 6. AdMob（GADApplicationIdentifier / ATT / SKAdNetwork）
+ * ------------------------------------------------------------------ */
+const GAD = 'GADApplicationIdentifier';
+const ATT = 'NSUserTrackingUsageDescription';
+const SKAD = 'SKAdNetworkItems';
+const PROD_APP_ID = 'ca-app-pub-5739782559889389~9293414856';
+
+test('AdMob: 未設定のテンプレートに GADApplicationIdentifier / ATT / SKAdNetwork を注入する', () => {
+    const before = templatePlist();
+    assert.equal(countKey(before, GAD), 0);
+
+    const { content, actions } = configureContent(before);
+
+    assert.equal(countKey(content, GAD), 1);
+    assert.equal(countKey(content, ATT), 1);
+    assert.equal(countKey(content, SKAD), 1);
+    assert.match(content, new RegExp(`<key>${GAD}</key>\\s*<string>${PROD_APP_ID.replace(/[~]/g, '\\~')}</string>`));
+    assert.match(content, /cstr6suwn9\.skadnetwork/);
+    assert.ok(actions.some((item) => item.key === GAD && item.action === 'injected'));
+    assert.deepEqual(verifyContent(content), []);
+});
+
+test('AdMob: Google のサンプルアプリIDが入っていても本番IDへ上書きする', () => {
+    const sample = templatePlist(`\t<key>GADApplicationIdentifier</key>\n\t<string>ca-app-pub-3940256099942544~1458002511</string>\n`);
+    const { content, actions } = configureContent(sample);
+
+    assert.ok(actions.some((item) => item.key === GAD && item.action === 'updated'));
+    assert.match(content, new RegExp(PROD_APP_ID));
+    assert.doesNotMatch(content, /ca-app-pub-3940256099942544/);
+    assert.deepEqual(verifyContent(content), []);
+});
+
+test('AdMob: GADApplicationIdentifier がサンプルIDのままなら verifyContent が問題を返す', () => {
+    const problems = verifyContent(
+        templatePlist(`\t<key>GADApplicationIdentifier</key>\n\t<string>ca-app-pub-3940256099942544~1458002511</string>\n`)
+    );
+    assert.ok(problems.some((problem) => problem.includes('サンプルID')), 'サンプルIDを見逃さない');
+});
+
+test('AdMob: ATT の説明文は拒否しても全機能が使えることを書いている（審査要件）', () => {
+    const { content } = configureContent(templatePlist());
+    const start = content.indexOf(`<key>${ATT}</key>`);
+    const block = content.slice(start, content.indexOf('</string>', start));
+
+    assert.match(block, /広告識別子/);
+    assert.match(block, /許可しない場合も/);
+});
+
+test('AdMob: 既に手で入れた SKAdNetworkItems を壊さない（presence モード）', () => {
+    const extra = `\t<key>SKAdNetworkItems</key>\n\t<array>\n\t\t<dict>\n\t\t\t<key>SKAdNetworkIdentifier</key>\n\t\t\t<string>cstr6suwn9.skadnetwork</string>\n\t\t</dict>\n\t\t<dict>\n\t\t\t<key>SKAdNetworkIdentifier</key>\n\t\t\t<string>v9wttpbfk9.skadnetwork</string>\n\t\t</dict>\n\t</array>\n`;
+    const { content } = configureContent(templatePlist(extra));
+
+    assert.equal(countKey(content, SKAD), 1);
+    assert.match(content, /v9wttpbfk9\.skadnetwork/, '手で足した識別子が残る');
+    assert.deepEqual(verifyContent(content), []);
+});
+
+test('AdMob: CLI 実行後の Info.plist を plistlib で読むと GADApplicationIdentifier が本番ID', () => {
+    if (!hasPython()) return;
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'd15-ios-config-'));
+    const plistPath = path.join(dir, 'Info.plist');
+    try {
+        fs.writeFileSync(plistPath, templatePlist(), 'utf8');
+        execFileSync(process.execPath, [SCRIPT], {
+            env: { ...process.env, IOS_PLIST_PATH: plistPath },
+            stdio: 'pipe'
+        });
+
+        const parsed = readPlistWithPython(plistPath);
+        assert.ok(parsed, 'plistlib で読める');
+        assert.equal(parsed.GADApplicationIdentifier, PROD_APP_ID);
+        assert.equal(typeof parsed.NSUserTrackingUsageDescription, 'string');
+        assert.ok(Array.isArray(parsed.SKAdNetworkItems), 'SKAdNetworkItems は配列');
+        assert.equal(parsed.SKAdNetworkItems[0].SKAdNetworkIdentifier, 'cstr6suwn9.skadnetwork');
+    } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+    }
+});
+
+test('配線: ci/ios-build.yml が AdMob の設定検証と GoogleUserMessagingPlatform の固定を行う', () => {
+    const workflow = fs.readFileSync(path.join(ROOT, 'ci', 'ios-build.yml'), 'utf8');
+    assert.match(workflow, /GADApplicationIdentifier/);
+    assert.match(workflow, /NSUserTrackingUsageDescription/);
+    assert.match(workflow, /cstr6suwn9\.skadnetwork/);
+    assert.match(workflow, /GoogleUserMessagingPlatform/, 'AdMob SDK のビルド失敗を防ぐ固定');
+    assert.match(workflow, /npm ci \|\| npm install/, 'package-lock.json があれば npm ci を使う');
+});

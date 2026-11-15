@@ -50,6 +50,28 @@ const CONFIG_ENTRIES = [
         mode: 'value'
     },
     {
+        // AdMob の iOS アプリID（本番。Google のサンプルIDではない）。
+        // 値まで一致させる：違う値のまま出荷すると TestFlight / App Store の実機で
+        // 本番広告が一切配信されず、管理画面にもリクエストが届かない。
+        // 広告ユニットIDは config.js の ADMOB.BANNER_AD_ID（同じ ca-app-pub-5739782559889389）と対。
+        key: 'GADApplicationIdentifier',
+        value: '<string>ca-app-pub-5739782559889389~9293414856</string>',
+        mode: 'value'
+    },
+    {
+        // App Tracking Transparency (ATT)。審査では「何のために識別子を使うのか」が
+        // 具体的に書かれているかを見られる。拒否しても全機能が使えることも明記する。
+        key: 'NSUserTrackingUsageDescription',
+        value: '<string>利用者に合わせた広告を表示するために、広告識別子（IDFA）の利用許可をお願いしています。許可しない場合も、15文字の投稿・ルーレット・いいねなどすべての機能を同じようにご利用いただけます。</string>',
+        mode: 'value'
+    },
+    {
+        // SKAdNetwork（広告の効果測定用）。AdMob が推奨する Google の識別子を入れておく。
+        key: 'SKAdNetworkItems',
+        value: '<array>\n\t\t<dict>\n\t\t\t<key>SKAdNetworkIdentifier</key>\n\t\t\t<string>cstr6suwn9.skadnetwork</string>\n\t\t</dict>\n\t</array>',
+        mode: 'presence'
+    },
+    {
         // 輸出コンプライアンス。Apple の暗号化（HTTPS）を使うだけで「非免除」ではないため false。
         // これを Info.plist に入れておくと、TestFlight のビルドが
         // 「輸出コンプライアンスがありません」で保留にならず自動配信される。
@@ -223,6 +245,31 @@ function verifyContent(content) {
         problems.push('ITSAppUsesNonExemptEncryption が <false/> になっていません（TestFlight 自動配信の条件）');
     }
 
+    // AdMob: 本番アプリIDが入っているか（サンプルIDのまま出荷すると広告が配信されない）
+    const gadStart = content.indexOf('<key>GADApplicationIdentifier</key>');
+    if (gadStart === -1) {
+        problems.push('GADApplicationIdentifier がありません（AdMob のアプリID）');
+    } else {
+        const gadEnd = content.indexOf('</string>', gadStart);
+        const gadBlock = gadEnd === -1 ? '' : content.slice(gadStart, gadEnd);
+        if (gadBlock.includes('ca-app-pub-3940256099942544')) {
+            problems.push('GADApplicationIdentifier が Google のサンプルIDのままです（本番アプリIDにしてください）');
+        }
+        if (!gadBlock.includes('ca-app-pub-5739782559889389~9293414856')) {
+            problems.push('GADApplicationIdentifier が本番アプリID（ca-app-pub-5739782559889389~9293414856）と違います');
+        }
+    }
+
+    // AdMob: SKAdNetworkItems に Google の識別子が入っているか
+    const skadStart = content.indexOf('<key>SKAdNetworkItems</key>');
+    if (skadStart !== -1) {
+        const skadEnd = content.indexOf('</array>', skadStart);
+        const skadBlock = skadEnd === -1 ? '' : content.slice(skadStart, skadEnd);
+        if (!/cstr6suwn9\.skadnetwork/.test(skadBlock)) {
+            problems.push('SKAdNetworkItems に cstr6suwn9.skadnetwork（Google）が入っていません');
+        }
+    }
+
     return problems;
 }
 
@@ -281,6 +328,7 @@ function main() {
         }
 
         console.log(`[iOS Config] Home screen name: ${APP_DISPLAY_NAME}`);
+        console.log('[iOS Config] AdMob: GADApplicationIdentifier = ca-app-pub-5739782559889389~9293414856 (banner: ca-app-pub-5739782559889389/5354169841)');
         console.log('[iOS Config] Export compliance: ITSAppUsesNonExemptEncryption = false (TestFlight auto-delivery OK).');
     } catch (err) {
         console.error('[iOS Config] Error modifying Info.plist:', err);

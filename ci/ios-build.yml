@@ -39,7 +39,7 @@ jobs:
         run: |
           npm ci || npm install
 
-      - name: Run Unit Tests (export compliance / safe area / www sync)
+      - name: Run Unit Tests (export compliance / AdMob / safe area / www sync)
         run: |
           npm test
 
@@ -71,10 +71,50 @@ jobs:
           node scripts/configure-ios.js
           node scripts/setup-ios-assets.js
 
+      - name: Pin Google User Messaging Platform 2.x & Re-run pod install
+        run: |
+          cd ios/App
+          pod --version
+          # @capacitor-community/admob@6.2.0 pins Google-Mobile-Ads-SDK 11.3.0, whose Swift
+          # sources use the pre-3.0 messaging symbols (UMPConsentStatus, UMPRequestParameters...).
+          # CocoaPods can otherwise resolve GoogleUserMessagingPlatform 3.x, where those symbols
+          # are renamed, and the AdMob plugin then fails to compile. Pin the messaging platform to 2.x.
+          printf '%s\n' "import pathlib" "p = pathlib.Path('Podfile')" "s = p.read_text()" "if 'GoogleUserMessagingPlatform' not in s:" "    p.write_text(s.replace('  capacitor_pods\\n', \"  capacitor_pods\\n  pod 'GoogleUserMessagingPlatform', '~> 2.1'\\n\", 1))" > /tmp/pin_ump.py
+          python3 /tmp/pin_ump.py
+          echo "=== Podfile target block ==="
+          grep -A4 "^target 'App' do" Podfile || true
+          # `npx cap sync ios` already ran pod install and wrote a Podfile.lock that pins
+          # GoogleUserMessagingPlatform 3.x; drop it so the pin above takes effect.
+          rm -f Podfile.lock
+          pod install
+          echo "=== Resolved Google pod versions ==="
+          grep -E "Google-Mobile-Ads-SDK|GoogleUserMessagingPlatform" Podfile.lock | head -10 || true
+
       - name: Verify Export Compliance in Generated Info.plist
         run: |
           grep -A1 '<key>ITSAppUsesNonExemptEncryption</key>' ios/App/App/Info.plist | grep '<false/>'
           echo "[CI] ITSAppUsesNonExemptEncryption = false (TestFlight auto-delivery OK)"
+
+      - name: Verify AdMob Configuration in Generated Info.plist
+        run: |
+          # 本番アプリID（Google のサンプルID ca-app-pub-3940256099942544 ではない）
+          grep -A1 '<key>GADApplicationIdentifier</key>' ios/App/App/Info.plist | grep 'ca-app-pub-5739782559889389~9293414856'
+          # ATT（トラッキング許可）の説明文。これが無いと ATT ダイアログを出せず審査でも指摘される
+          grep -q '<key>NSUserTrackingUsageDescription</key>' ios/App/App/Info.plist
+          # SKAdNetwork（広告の効果測定）
+          grep -q '<key>SKAdNetworkItems</key>' ios/App/App/Info.plist
+          grep -q 'cstr6suwn9.skadnetwork' ios/App/App/Info.plist
+          # ビルド成果物 www/ に admob.js が入っていること
+          test -f www/admob.js
+          grep -q 'ca-app-pub-5739782559889389/5354169841' www/config.js
+          echo "[CI] AdMob app ID / ATT / SKAdNetwork / banner unit verified"
+
+      - name: Verify iOS Project Pods / Workspace
+        run: |
+          cd ios/App
+          ls -d App.xcworkspace
+          grep -q 'CapacitorCommunityAdmob' Podfile.lock
+          echo "[CI] CapacitorCommunityAdmob pod resolved"
 
       - name: Clean & Compile iOS App (Xcode Verification)
         run: |
@@ -101,6 +141,8 @@ jobs:
         run: |
           echo "### iOS Automated Build Succeeded!" >> $GITHUB_STEP_SUMMARY
           echo "- **App**: 15文字デート (com.oekaki.date15)" >> $GITHUB_STEP_SUMMARY
+          echo "- **AdMob**: 下部常時バナー（app ca-app-pub-5739782559889389~9293414856 / banner ca-app-pub-5739782559889389/5354169841）" >> $GITHUB_STEP_SUMMARY
+          echo "- **AdMob Mode**: config.js の USE_TEST_ADS でテスト広告 / 本番広告を切り替え（提出直前に false）" >> $GITHUB_STEP_SUMMARY
           echo "- **Xcode**: $(xcodebuild -version | tr '\n' ' ')" >> $GITHUB_STEP_SUMMARY
           echo "- **macOS**: $(sw_vers -productVersion)" >> $GITHUB_STEP_SUMMARY
           echo "- **Status**: Clean compiled successfully without errors." >> $GITHUB_STEP_SUMMARY
