@@ -185,43 +185,43 @@
     }
 
     if (hasWhitespace(text)) {
-      countBadge.className = 'shrink-0 whitespace-nowrap text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-950 text-rose-200 border border-rose-700';
+      countBadge.className = 'shrink-0 whitespace-nowrap text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-950 text-rose-200 border border-rose-700';
       msgEl.textContent = '⚠️ 空白（スペース）は使えません';
-      msgEl.className = 'text-[9.5px] font-bold text-rose-500 whitespace-nowrap transition-all';
+      msgEl.className = 'text-[11px] font-bold text-rose-500 whitespace-nowrap transition-all';
       submitBtn.disabled = true;
-      submitBtn.className = 'w-full py-2.5 px-4 rounded-xl font-bold text-sm text-white bg-[#D8C8BF] cursor-not-allowed transition flex items-center justify-center space-x-1.5 shadow-xs';
+      submitBtn.className = 'w-full py-2.5 px-4 rounded-xl font-bold text-sm text-white bg-[#B8A499] cursor-not-allowed transition flex items-center justify-center space-x-1.5 shadow-xs';
       return;
     }
 
     if (checkSensitiveWord(text)) {
-      countBadge.className = 'shrink-0 whitespace-nowrap text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-950 text-rose-200 border border-rose-700';
+      countBadge.className = 'shrink-0 whitespace-nowrap text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-950 text-rose-200 border border-rose-700';
       msgEl.textContent = '⚠️ 不適切な表現が含まれています';
-      msgEl.className = 'text-[9.5px] font-bold text-rose-500 whitespace-nowrap transition-all';
+      msgEl.className = 'text-[11px] font-bold text-rose-500 whitespace-nowrap transition-all';
       submitBtn.disabled = true;
-      submitBtn.className = 'w-full py-2.5 px-4 rounded-xl font-bold text-sm text-white bg-[#D8C8BF] cursor-not-allowed transition flex items-center justify-center space-x-1.5 shadow-xs';
+      submitBtn.className = 'w-full py-2.5 px-4 rounded-xl font-bold text-sm text-white bg-[#B8A499] cursor-not-allowed transition flex items-center justify-center space-x-1.5 shadow-xs';
       return;
     }
 
     if (len === 15) {
-      countBadge.className = 'shrink-0 whitespace-nowrap text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-300 animate-pulse';
+      countBadge.className = 'shrink-0 whitespace-nowrap text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-300 animate-pulse';
       msgEl.textContent = '✨ 15文字ピッタリ！このまま投稿できます！';
-      msgEl.className = 'text-[9.5px] font-bold text-rose-600 whitespace-nowrap transition-all';
+      msgEl.className = 'text-[11px] font-bold text-rose-600 whitespace-nowrap transition-all';
       submitBtn.disabled = false;
       submitBtn.className = 'w-full py-2.5 px-4 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-[#E26D6D] to-[#D65D5D] hover:opacity-95 active:scale-[0.99] shadow-md transition flex items-center justify-center space-x-1.5 cursor-pointer';
     } else if (len > 15) {
       const over = len - 15;
-      countBadge.className = 'shrink-0 whitespace-nowrap text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-950 text-rose-200 border border-rose-700';
+      countBadge.className = 'shrink-0 whitespace-nowrap text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-950 text-rose-200 border border-rose-700';
       msgEl.textContent = `⚠️ ${over}文字オーバーです（15文字丁度に削ってね）`;
-      msgEl.className = 'text-[9.5px] font-bold text-rose-500 whitespace-nowrap transition-all';
+      msgEl.className = 'text-[11px] font-bold text-rose-500 whitespace-nowrap transition-all';
       submitBtn.disabled = true;
-      submitBtn.className = 'w-full py-2.5 px-4 rounded-xl font-bold text-sm text-white bg-[#D8C8BF] cursor-not-allowed transition flex items-center justify-center space-x-1.5 shadow-xs';
+      submitBtn.className = 'w-full py-2.5 px-4 rounded-xl font-bold text-sm text-white bg-[#B8A499] cursor-not-allowed transition flex items-center justify-center space-x-1.5 shadow-xs';
     } else {
       const remain = 15 - len;
-      countBadge.className = 'shrink-0 whitespace-nowrap text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FAF5F2] text-[#8C766B] border border-[#D8C8BF]';
+      countBadge.className = 'shrink-0 whitespace-nowrap text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#FAF5F2] text-[#6E564B] border border-[#B8A499]';
       msgEl.textContent = len === 0 ? 'ピッタリ15文字になると投稿できます' : `あと ${remain} 文字でピッタリです`;
-      msgEl.className = 'text-[9.5px] text-[#A89488] whitespace-nowrap transition-all';
+      msgEl.className = 'text-[11px] text-[#7C6656] whitespace-nowrap transition-all';
       submitBtn.disabled = true;
-      submitBtn.className = 'w-full py-2.5 px-4 rounded-xl font-bold text-sm text-white bg-[#D8C8BF] cursor-not-allowed transition flex items-center justify-center space-x-1.5 shadow-xs';
+      submitBtn.className = 'w-full py-2.5 px-4 rounded-xl font-bold text-sm text-white bg-[#B8A499] cursor-not-allowed transition flex items-center justify-center space-x-1.5 shadow-xs';
     }
   }
 
@@ -369,7 +369,7 @@
     if (isVoted) {
       likeBtn.className = 'bg-rose-50 hover:bg-rose-100 border border-rose-300 text-rose-600 font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center space-x-1 transition active:scale-95 shadow-xs whitespace-nowrap';
     } else {
-      likeBtn.className = 'bg-[#FAF5F2] hover:bg-[#EFE5DF] border border-[#D8C8BF] text-[#8C766B] font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center space-x-1 transition active:scale-95 whitespace-nowrap';
+      likeBtn.className = 'bg-[#FAF5F2] hover:bg-[#EFE5DF] border border-[#B8A499] text-[#6E564B] font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center space-x-1 transition active:scale-95 whitespace-nowrap';
     }
   }
 
@@ -454,7 +454,7 @@
     }
 
     if (sorted.length === 0) {
-      container.innerHTML = '<div class="text-center py-6 text-xs text-[#A89488]">まだ投稿がありません。最初の15文字を投稿してみよう！</div>';
+      container.innerHTML = '<div class="text-center py-6 text-xs text-[#7C6656]">まだ投稿がありません。最初の15文字を投稿してみよう！</div>';
       return;
     }
 
@@ -463,17 +463,17 @@
       const isTop3 = state.currentSort === 'likes' && index < 3;
       const rankBadge = isTop3 
         ? `<span class="w-4 h-4 shrink-0 rounded-full flex items-center justify-center text-[9px] font-bold ${index === 0 ? 'bg-amber-400 text-amber-950' : index === 1 ? 'bg-slate-300 text-slate-800' : 'bg-amber-600 text-amber-50'}">${index + 1}</span>`
-        : `<span class="w-4 h-4 shrink-0 flex items-center justify-center text-[9px] text-[#A89488] font-bold">${index + 1}</span>`;
+        : `<span class="w-4 h-4 shrink-0 flex items-center justify-center text-[9px] text-[#7C6656] font-bold">${index + 1}</span>`;
 
       return `
-        <div class="bg-white rounded-xl p-3 border border-[#E8DDD5] shadow-xs flex items-center justify-between hover:border-[#D8C8BF] transition">
+        <div class="bg-white rounded-xl p-3 border border-[#DDCFC2] shadow-xs flex items-center justify-between hover:border-[#B8A499] transition">
           <div class="flex items-center space-x-2 flex-1 min-w-0 pr-2">
             ${rankBadge}
             <div class="min-w-0 flex-1">
               <div class="text-xs sm:text-sm font-bold font-mincho text-[#2D231E] tracking-tight truncate whitespace-nowrap">
                 ${plan.text}
               </div>
-              <div class="text-[9px] text-[#8C766B] flex items-center space-x-1 mt-0.5 whitespace-nowrap">
+              <div class="text-[9px] text-[#6E564B] flex items-center space-x-1 mt-0.5 whitespace-nowrap">
                 <span class="text-rose-500 font-bold">15文字</span>
                 <span>·</span>
                 <span class="truncate">by ${plan.author || '匿名希望'}</span>
@@ -487,7 +487,7 @@
             class="shrink-0 flex items-center space-x-1 px-2.5 py-1 rounded-full border transition active:scale-95 text-[11px] font-bold ${
               isVoted 
                 ? 'bg-rose-50 border-rose-300 text-rose-600 shadow-xs' 
-                : 'bg-[#FAF5F2] border-[#E8DDD5] text-[#8C766B] hover:border-[#D8C8BF]'
+                : 'bg-[#FAF5F2] border-[#DDCFC2] text-[#6E564B] hover:border-[#B8A499]'
             }"
           >
             <span class="${isVoted ? 'heart-bounce' : ''}">${isVoted ? '❤️' : '🤍'}</span>
@@ -576,7 +576,7 @@
 
     function setActiveSort(btn, sortKey) {
       [sortLikes, sortNewest, sortRandom].forEach(b => {
-        b.className = 'py-1 rounded-lg text-[#8C766B] hover:text-[#2D231E] text-center whitespace-nowrap transition';
+        b.className = 'py-1 rounded-lg text-[#6E564B] hover:text-[#2D231E] text-center whitespace-nowrap transition';
       });
       btn.className = 'py-1 rounded-lg font-bold bg-white text-[#2D231E] shadow-xs text-center whitespace-nowrap transition';
       state.currentSort = sortKey;

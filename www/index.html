@@ -50,7 +50,7 @@
     .char-cell {
       width: 34px;
       height: 34px;
-      border: 1.5px solid #D8C8BF;
+      border: 1.5px solid #B8A499;
       background-color: #FFFFFF;
       transition: all 0.15s ease;
       display: flex;
@@ -63,7 +63,7 @@
       box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
     }
     .char-cell.filled {
-      border-color: #C27D66;
+      border-color: #B06A4F;
       background-color: #FFFDFB;
       color: #2D231E;
       box-shadow: 0 1px 3px rgba(194, 125, 102, 0.15);
@@ -133,7 +133,7 @@
       display: none;
       height: var(--date15-tabbar-height, 58px);
       background: rgba(255, 255, 255, 0.97);
-      border-top: 1px solid #E8DDD5;
+      border-top: 1px solid #DDCFC2;
       box-shadow: 0 -2px 10px rgba(56, 44, 38, 0.06);
     }
     html[data-date15-tabs="true"] .date15-tabbar {
@@ -152,8 +152,8 @@
       border: 0;
       border-radius: 12px;
       background: transparent;
-      color: #A89488;
-      font-size: 10px;
+      color: #7C6656;
+      font-size: 11px;
       font-weight: 700;
       line-height: 1.1;
       transition: background-color 0.15s ease, color 0.15s ease;
@@ -163,7 +163,7 @@
       line-height: 1;
     }
     .date15-tab[aria-selected="true"] {
-      color: #C27D66;
+      color: #A85B43;
       background: #FAF5F2;
     }
 
@@ -229,7 +229,7 @@
       padding: 9px 10px;
       border-radius: 12px;
       background: #FAF5F2;
-      border: 1px solid #E8DDD5;
+      border: 1px solid #DDCFC2;
     }
     .date15-rules-item + .date15-rules-item {
       margin-top: 6px;
@@ -239,7 +239,7 @@
 <body class="min-h-screen flex flex-col justify-between selection:bg-rose-100 selection:text-rose-900">
 
   <!-- ヘッダー（スマホ改行崩れ完全防止） -->
-  <header class="w-full bg-white/95 backdrop-blur-md border-b border-[#E8DDD5] sticky top-0 z-30 px-3 py-2 shadow-xs">
+  <header class="w-full bg-white/95 backdrop-blur-md border-b border-[#DDCFC2] sticky top-0 z-30 px-3 py-2 shadow-xs">
     <div class="max-w-md mx-auto flex items-center justify-between">
       <div class="flex items-center space-x-2 min-w-0">
         <span class="text-xl shrink-0">☕</span>
@@ -247,14 +247,14 @@
           <h1 class="text-xs sm:text-sm font-bold text-[#2D231E] font-mincho leading-tight">
             <span class="inline-block whitespace-nowrap">理想のデートを</span><span class="inline-block whitespace-nowrap">15文字でどうぞ。</span>
           </h1>
-          <p class="text-[9px] text-[#8C766B] whitespace-nowrap truncate">
+          <p class="text-[10.5px] text-[#6E564B] whitespace-nowrap truncate">
             ふたりの日常を、とっておきのデートに。
           </p>
         </div>
       </div>
 
       <button id="btnOpenRules" type="button" aria-label="あそびかた（ルール）を見る" title="あそびかた"
-        class="date15-rules-open shrink-0 ml-2 w-7 h-7 rounded-full border border-[#D8C8BF] bg-[#FAF5F2] text-[#8C766B] text-xs font-bold items-center justify-center transition active:scale-95">？</button>
+        class="date15-rules-open shrink-0 ml-2 w-7 h-7 rounded-full border border-[#B8A499] bg-[#FAF5F2] text-[#6E564B] text-xs font-bold items-center justify-center transition active:scale-95">？</button>
 
     </div>
   </header>
@@ -263,23 +263,23 @@
   <main class="max-w-md w-full mx-auto px-3.5 py-3.5 flex-1 space-y-3.5">
 
     <!-- ① 今日のデートルーレット（一番上に配置＆高さをスリム化！） -->
-    <section data-date15-panel="roulette" class="bg-white rounded-2xl p-3 sm:p-3.5 border border-[#E8DDD5] shadow-xs relative overflow-hidden">
+    <section data-date15-panel="roulette" class="bg-white rounded-2xl p-3 sm:p-3.5 border border-[#DDCFC2] shadow-xs relative overflow-hidden">
       <div class="flex items-center justify-between mb-1.5">
         <div class="flex items-center space-x-1.5">
           <span class="text-sm">🎲</span>
-          <h2 class="text-xs font-bold text-[#8C766B] tracking-wider uppercase whitespace-nowrap">ルーレット</h2>
+          <h2 class="text-xs font-bold text-[#6E564B] tracking-wider uppercase whitespace-nowrap">ルーレット</h2>
         </div>
-        <span class="text-[9px] text-[#A89488] bg-[#FAF5F2] px-2 py-0.5 rounded-full border border-[#E8DDD5] whitespace-nowrap">
+        <span class="text-[10px] text-[#7C6656] bg-[#FAF5F2] px-2 py-0.5 rounded-full border border-[#DDCFC2] whitespace-nowrap">
           全 <span id="rouletteTotalCount" class="font-bold text-[#2D231E]">10</span> プラン
         </span>
       </div>
 
       <!-- ルーレット表示パネル（高さをキュッとスリムに） -->
-      <div class="bg-[#FAF5F2] rounded-xl px-3 py-2.5 border border-dashed border-[#D8C8BF] text-center min-h-[64px] flex flex-col items-center justify-center relative">
+      <div class="bg-[#FAF5F2] rounded-xl px-3 py-2.5 border border-dashed border-[#B8A499] text-center min-h-[64px] flex flex-col items-center justify-center relative">
         <div id="rouletteResult" class="text-xs sm:text-sm font-bold font-mincho text-[#2D231E] leading-snug transition-all duration-200">
           「今日のふたり、何して遊ぶ？」
         </div>
-        <div id="rouletteAuthor" class="text-[9px] text-[#8C766B] mt-0.5 hidden whitespace-nowrap"></div>
+        <div id="rouletteAuthor" class="text-[10px] text-[#6E564B] mt-0.5 hidden whitespace-nowrap"></div>
       </div>
 
       <!-- ルーレット起動ボタン -->
@@ -288,11 +288,11 @@
           <span>🎲</span>
           <span>今日のデートを決める！</span>
         </button>
-        <button id="btnLikeRoulette" class="hidden bg-[#FAF5F2] hover:bg-[#EFE5DF] border border-[#D8C8BF] text-[#8C766B] font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center space-x-1 transition active:scale-95 whitespace-nowrap">
+        <button id="btnLikeRoulette" class="hidden bg-[#FAF5F2] hover:bg-[#EFE5DF] border border-[#B8A499] text-[#6E564B] font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center space-x-1 transition active:scale-95 whitespace-nowrap">
           <span id="rouletteLikeHeart">🤍</span>
           <span id="rouletteLikeCount">0</span>
         </button>
-        <button id="btnShareRoulette" class="hidden bg-[#FAF5F2] hover:bg-[#EFE5DF] text-[#6E564B] border border-[#D8C8BF] font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center space-x-1 transition whitespace-nowrap">
+        <button id="btnShareRoulette" class="hidden bg-[#FAF5F2] hover:bg-[#EFE5DF] text-[#6E564B] border border-[#B8A499] font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center space-x-1 transition whitespace-nowrap">
           <span>𝕏</span>
           <span>シェア</span>
         </button>
@@ -300,7 +300,7 @@
     </section>
 
     <!-- ② 15文字ピッタリ投稿フォーム -->
-    <section data-date15-panel="post" class="bg-white rounded-2xl p-3.5 border border-[#E8DDD5] shadow-xs space-y-2.5">
+    <section data-date15-panel="post" class="bg-white rounded-2xl p-3.5 border border-[#DDCFC2] shadow-xs space-y-2.5">
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-1.5 min-w-0">
           <span class="text-sm shrink-0">💌</span>
@@ -308,7 +308,7 @@
             <span class="inline-block whitespace-nowrap">ふたりの理想のデートを</span><span class="inline-block whitespace-nowrap">15文字で</span>
           </h2>
         </div>
-        <span id="charCountBadge" class="shrink-0 whitespace-nowrap text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FAF5F2] text-[#8C766B] border border-[#D8C8BF]">
+        <span id="charCountBadge" class="shrink-0 whitespace-nowrap text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#FAF5F2] text-[#6E564B] border border-[#B8A499]">
           <span id="currentCharCount">0</span> / 15文字
         </span>
       </div>
@@ -321,7 +321,7 @@
           </div>
         </div>
         <div class="text-center">
-          <span id="statusMessage" class="text-[10px] text-[#A89488] whitespace-nowrap transition-all">
+          <span id="statusMessage" class="text-[11px] text-[#7C6656] whitespace-nowrap transition-all">
             ピッタリ15文字になると投稿できます
           </span>
         </div>
@@ -335,22 +335,22 @@
             id="planInput" 
             maxlength="20" 
             placeholder="例: 古本屋で五百円分選び合ってみる" 
-            class="w-full px-3 py-2 bg-[#FAF5F2] border border-[#D8C8BF] rounded-xl text-xs text-[#2D231E] focus:outline-none focus:border-[#E26D6D] focus:bg-white transition placeholder-[#B8A499]"
+            class="w-full px-3 py-2 bg-[#FAF5F2] border border-[#B8A499] rounded-xl text-xs text-[#2D231E] focus:outline-none focus:border-[#E26D6D] focus:bg-white transition placeholder-[#8C766B]"
           >
-          <button id="btnClearInput" class="absolute right-3 top-2 text-[#A89488] hover:text-[#2D231E] text-xs hidden">
+          <button id="btnClearInput" class="absolute right-3 top-2 text-[#7C6656] hover:text-[#2D231E] text-xs hidden">
             ✕
           </button>
         </div>
 
         <!-- ユーザーネーム入力欄 -->
         <div class="flex items-center space-x-2">
-          <span class="text-[11px] text-[#8C766B] whitespace-nowrap">投稿者名:</span>
+          <span class="text-[11px] text-[#6E564B] whitespace-nowrap">投稿者名:</span>
           <input 
             type="text" 
             id="authorInput" 
             maxlength="12" 
             placeholder="お名前（未入力なら匿名希望）" 
-            class="flex-1 px-2.5 py-1.5 bg-[#FAF5F2] border border-[#D8C8BF] rounded-lg text-xs text-[#2D231E] focus:outline-none focus:border-[#E26D6D] focus:bg-white transition placeholder-[#B8A499]"
+            class="flex-1 px-2.5 py-1.5 bg-[#FAF5F2] border border-[#B8A499] rounded-lg text-xs text-[#2D231E] focus:outline-none focus:border-[#E26D6D] focus:bg-white transition placeholder-[#8C766B]"
           >
         </div>
 
@@ -358,7 +358,7 @@
         <button 
           id="btnSubmitPlan" 
           disabled 
-          class="w-full py-2 px-4 rounded-xl font-bold text-sm text-white bg-[#D8C8BF] cursor-not-allowed transition flex items-center justify-center space-x-1.5 shadow-xs"
+          class="w-full py-2 px-4 rounded-xl font-bold text-sm text-white bg-[#B8A499] cursor-not-allowed transition flex items-center justify-center space-x-1.5 shadow-xs"
         >
           <span>📮</span>
           <span>投稿</span>
@@ -381,10 +381,10 @@
           <button id="sortLikes" class="py-1 rounded-lg font-bold bg-white text-[#2D231E] shadow-xs text-center whitespace-nowrap transition">
             👍 人気順
           </button>
-          <button id="sortNewest" class="py-1 rounded-lg text-[#8C766B] hover:text-[#2D231E] text-center whitespace-nowrap transition">
+          <button id="sortNewest" class="py-1 rounded-lg text-[#6E564B] hover:text-[#2D231E] text-center whitespace-nowrap transition">
             🌱 新着順
           </button>
-          <button id="sortRandom" class="py-1 rounded-lg text-[#8C766B] hover:text-[#2D231E] text-center whitespace-nowrap transition">
+          <button id="sortRandom" class="py-1 rounded-lg text-[#6E564B] hover:text-[#2D231E] text-center whitespace-nowrap transition">
             🎲 ランダム
           </button>
         </div>
@@ -400,13 +400,13 @@
 
   <!-- 権利帰属注記（一番下に小さく配置） -->
   <aside class="max-w-md mx-auto px-4 py-2.5 text-center">
-    <p class="text-[9px] text-[#A89488] leading-relaxed">
+    <p class="text-[10px] text-[#7C6656] leading-relaxed">
       ※投稿内容は企画者（しょうだい）の作品制作やWebメディア等で活用させていただく場合があります。
     </p>
   </aside>
 
   <!-- フッター -->
-  <footer class="w-full bg-[#FAF5F2] border-t border-[#E8DDD5] py-4 px-4 text-center text-xs text-[#8C766B] space-y-2">
+  <footer class="w-full bg-[#FAF5F2] border-t border-[#DDCFC2] py-4 px-4 text-center text-xs text-[#6E564B] space-y-2">
     <div class="flex justify-center items-center space-x-3 text-[10px]">
       <a href="https://crayonjapan.base.shop/" target="_blank" rel="noopener noreferrer" class="hover:text-[#2D231E] underline">BASEショップ</a>
       <span>•</span>
@@ -416,7 +416,7 @@
       <span>•</span>
       <a href="support.html" class="hover:text-[#2D231E] underline">サポート</a>
     </div>
-    <p class="text-[9px] text-[#A89488] leading-tight">
+    <p class="text-[10px] text-[#7C6656] leading-tight">
       Created with for<br>お絵描き楽しも委員会（しょうだい）
     </p>
   </footer>
@@ -443,9 +443,9 @@
       <div class="flex items-start justify-between">
         <div>
           <h2 id="date15RulesTitle" class="text-sm font-bold text-[#2D231E] font-mincho">あそびかた</h2>
-          <p class="text-[10px] text-[#8C766B] mt-0.5">理想のデートを15文字で集めて、ルーレットで決めるアプリです。</p>
+          <p class="text-[10px] text-[#6E564B] mt-0.5">理想のデートを15文字で集めて、ルーレットで決めるアプリです。</p>
         </div>
-        <button id="btnCloseRulesX" type="button" aria-label="閉じる" class="shrink-0 ml-2 w-7 h-7 rounded-full bg-[#FAF5F2] border border-[#E8DDD5] text-[#8C766B] text-xs flex items-center justify-center active:scale-95 transition">✕</button>
+        <button id="btnCloseRulesX" type="button" aria-label="閉じる" class="shrink-0 ml-2 w-7 h-7 rounded-full bg-[#FAF5F2] border border-[#DDCFC2] text-[#6E564B] text-xs flex items-center justify-center active:scale-95 transition">✕</button>
       </div>
 
       <div class="mt-3">
@@ -472,7 +472,7 @@
         </div>
       </div>
 
-      <p class="text-[9px] text-[#A89488] leading-relaxed mt-3">
+      <p class="text-[10px] text-[#7C6656] leading-relaxed mt-3">
         ※投稿内容は企画者（しょうだい）の作品制作やWebメディア等で活用させていただく場合があります。
       </p>
 
@@ -480,7 +480,7 @@
         <span>はじめる</span>
       </button>
 
-      <div class="mt-2 flex justify-center items-center space-x-2 text-[9px] text-[#8C766B]">
+      <div class="mt-2 flex justify-center items-center space-x-2 text-[9px] text-[#6E564B]">
         <a href="privacy.html" class="underline">プライバシーポリシー</a>
         <span>•</span>
         <a href="terms.html" class="underline">利用規約</a>
