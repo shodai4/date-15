@@ -5,6 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>理想のデートを15文字でどうぞ。| ふたりの恋のルーレット</title>
   <meta name="description" content="たった15文字で綴る、ふたりだけの愛おしいデート。みんなの理想のデートプランを投稿・投票・ルーレットで決めるWebアプリ。">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="理想のデートを15文字でどうぞ。">
+  <meta property="og:title" content="理想のデートを15文字でどうぞ。| ふたりの恋のルーレット">
+  <meta property="og:description" content="たった15文字で綴る、ふたりだけの愛おしいデート。みんなの理想のデートプランを投稿・投票・ルーレットで決めるWebアプリ。">
+  <meta property="og:url" content="https://shodai4.com/date-15/">
+  <meta property="og:image" content="https://shodai4.com/date-15/icon-512.png">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="理想のデートを15文字でどうぞ。| ふたりの恋のルーレット">
+  <meta name="twitter:description" content="たった15文字で綴る、ふたりだけの愛おしいデート。みんなの理想のデートプランを投稿・投票・ルーレットで決めるWebアプリ。">
+  <meta name="twitter:image" content="https://shodai4.com/date-15/icon-512.png">
   <meta name="theme-color" content="#FAF5F2">
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -18,6 +28,8 @@
     body {
       font-family: 'Zen Maru Gothic', -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: #FAF5F2;
+      background-image: radial-gradient(rgba(214, 93, 93, 0.055) 1px, transparent 1.4px);
+      background-size: 18px 18px;
       color: #382C26;
       -webkit-tap-highlight-color: transparent;
       /* 下（ホームインジケータ）の余白は本文側で1回だけ確保する。
@@ -72,7 +84,18 @@
       border-color: #E26D6D;
       background-color: #FFF2F2;
       color: #B91C1C;
+      box-shadow: 0 0 0 2px rgba(226, 109, 109, 0.35), 0 3px 8px rgba(214, 93, 93, 0.28);
       animation: pulse 1s infinite alternate;
+    }
+
+    /* ルーレット結果が出たら、パネルを「結果カード」として目立たせる */
+    #roulettePanel {
+      transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    #roulettePanel:has(#rouletteAuthor:not(.hidden)) {
+      background: linear-gradient(135deg, #FFF6F1 0%, #FFEDEA 100%);
+      border: 1.5px solid #E8A598;
+      box-shadow: 0 8px 20px rgba(214, 93, 93, 0.18);
     }
 
     /* スロット回転アニメーション */
@@ -239,12 +262,12 @@
 <body class="min-h-screen flex flex-col justify-between selection:bg-rose-100 selection:text-rose-900">
 
   <!-- ヘッダー（スマホ改行崩れ完全防止） -->
-  <header class="w-full bg-white/95 backdrop-blur-md border-b border-[#DDCFC2] sticky top-0 z-30 px-3 py-2 shadow-xs">
+  <header class="w-full relative bg-[#FFFBF8]/95 backdrop-blur-md border-b border-[#DDCFC2] sticky top-0 z-30 px-3 py-2 shadow-xs">
     <div class="max-w-md mx-auto flex items-center justify-between">
       <div class="flex items-center space-x-2 min-w-0">
-        <span class="text-xl shrink-0">☕</span>
+        <span class="text-2xl shrink-0">☕</span>
         <div class="min-w-0">
-          <h1 class="text-xs sm:text-sm font-bold text-[#2D231E] font-mincho leading-tight">
+          <h1 class="text-sm sm:text-base font-bold text-[#2D231E] font-mincho leading-tight">
             <span class="inline-block whitespace-nowrap">理想のデートを</span><span class="inline-block whitespace-nowrap">15文字でどうぞ。</span>
           </h1>
           <p class="text-[10.5px] text-[#6E564B] whitespace-nowrap truncate">
@@ -257,6 +280,7 @@
         class="date15-rules-open shrink-0 ml-2 w-7 h-7 rounded-full border border-[#B8A499] bg-[#FAF5F2] text-[#6E564B] text-xs font-bold items-center justify-center transition active:scale-95">？</button>
 
     </div>
+    <div class="absolute bottom-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#F6C6B8] via-[#E26D6D] to-[#F6C6B8]" aria-hidden="true"></div>
   </header>
 
   <!-- メインコンテンツ -->
@@ -275,16 +299,16 @@
       </div>
 
       <!-- ルーレット表示パネル（高さをキュッとスリムに） -->
-      <div class="bg-[#FAF5F2] rounded-xl px-3 py-2.5 border border-dashed border-[#B8A499] text-center min-h-[64px] flex flex-col items-center justify-center relative">
-        <div id="rouletteResult" class="text-xs sm:text-sm font-bold font-mincho text-[#2D231E] leading-snug transition-all duration-200">
+      <div id="roulettePanel" class="bg-[#FAF5F2] rounded-xl px-3 py-3.5 border border-dashed border-[#B8A499] text-center min-h-[88px] flex flex-col items-center justify-center relative">
+        <div id="rouletteResult" class="text-base sm:text-lg font-bold font-mincho text-[#2D231E] leading-relaxed transition-all duration-200">
           「今日のふたり、何して遊ぶ？」
         </div>
-        <div id="rouletteAuthor" class="text-[10px] text-[#6E564B] mt-0.5 hidden whitespace-nowrap"></div>
+        <div id="rouletteAuthor" class="text-[11px] text-[#6E564B] mt-1 hidden whitespace-nowrap"></div>
       </div>
 
       <!-- ルーレット起動ボタン -->
       <div class="mt-2 flex gap-1.5">
-        <button id="btnSpinRoulette" class="flex-1 bg-gradient-to-r from-[#E26D6D] to-[#D65D5D] hover:opacity-95 active:scale-[0.98] text-white font-bold py-2 px-3 rounded-xl shadow-xs transition flex items-center justify-center space-x-1 text-xs tracking-wider whitespace-nowrap">
+        <button id="btnSpinRoulette" class="flex-1 bg-gradient-to-r from-[#E26D6D] to-[#D65D5D] hover:opacity-95 active:scale-[0.98] text-white font-bold py-2.5 px-3 rounded-xl shadow-sm transition flex items-center justify-center space-x-1 text-[13px] tracking-wider whitespace-nowrap">
           <span>🎲</span>
           <span>今日のデートを決める！</span>
         </button>
@@ -358,7 +382,7 @@
         <button 
           id="btnSubmitPlan" 
           disabled 
-          class="w-full py-2 px-4 rounded-xl font-bold text-sm text-white bg-[#B8A499] cursor-not-allowed transition flex items-center justify-center space-x-1.5 shadow-xs"
+          class="w-full py-2.5 px-4 rounded-xl font-bold text-sm text-white bg-[#B8A499] cursor-not-allowed transition flex items-center justify-center space-x-1.5 shadow-xs"
         >
           <span>📮</span>
           <span>投稿</span>
@@ -391,7 +415,7 @@
       </div>
 
       <!-- プランカード一覧リスト -->
-      <div id="plansContainer" class="space-y-1.5">
+      <div id="plansContainer" class="space-y-2">
         <!-- JSで動的レンダリング -->
       </div>
     </section>

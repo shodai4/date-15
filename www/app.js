@@ -203,11 +203,11 @@
     }
 
     if (len === 15) {
-      countBadge.className = 'shrink-0 whitespace-nowrap text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-300 animate-pulse';
+      countBadge.className = 'shrink-0 whitespace-nowrap text-xs font-bold px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-300 animate-pulse';
       msgEl.textContent = '✨ 15文字ピッタリ！このまま投稿できます！';
-      msgEl.className = 'text-[11px] font-bold text-rose-600 whitespace-nowrap transition-all';
+      msgEl.className = 'text-xs font-bold text-rose-600 whitespace-nowrap transition-all';
       submitBtn.disabled = false;
-      submitBtn.className = 'w-full py-2.5 px-4 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-[#E26D6D] to-[#D65D5D] hover:opacity-95 active:scale-[0.99] shadow-md transition flex items-center justify-center space-x-1.5 cursor-pointer';
+      submitBtn.className = 'w-full py-2.5 px-4 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-[#E26D6D] to-[#D65D5D] hover:opacity-95 active:scale-[0.99] shadow-lg shadow-rose-300/50 transition flex items-center justify-center space-x-1.5 cursor-pointer';
     } else if (len > 15) {
       const over = len - 15;
       countBadge.className = 'shrink-0 whitespace-nowrap text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-950 text-rose-200 border border-rose-700';
@@ -454,7 +454,7 @@
     }
 
     if (sorted.length === 0) {
-      container.innerHTML = '<div class="text-center py-6 text-xs text-[#7C6656]">まだ投稿がありません。最初の15文字を投稿してみよう！</div>';
+      container.innerHTML = '<div class="text-center py-6 text-sm text-[#7C6656]">まだ投稿がありません。最初の15文字を投稿してみよう！</div>';
       return;
     }
 
@@ -462,18 +462,18 @@
       const isVoted = state.votedIds.has(plan.id);
       const isTop3 = state.currentSort === 'likes' && index < 3;
       const rankBadge = isTop3 
-        ? `<span class="w-4 h-4 shrink-0 rounded-full flex items-center justify-center text-[9px] font-bold ${index === 0 ? 'bg-amber-400 text-amber-950' : index === 1 ? 'bg-slate-300 text-slate-800' : 'bg-amber-600 text-amber-50'}">${index + 1}</span>`
-        : `<span class="w-4 h-4 shrink-0 flex items-center justify-center text-[9px] text-[#7C6656] font-bold">${index + 1}</span>`;
+        ? `<span class="w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-[11px] font-bold ${index === 0 ? 'bg-amber-400 text-amber-950' : index === 1 ? 'bg-slate-300 text-slate-800' : 'bg-amber-600 text-amber-50'}">${index + 1}</span>`
+        : `<span class="w-6 h-6 shrink-0 flex items-center justify-center text-[11px] text-[#7C6656] font-bold">${index + 1}</span>`;
 
       return `
-        <div class="bg-white rounded-xl p-3 border border-[#DDCFC2] shadow-xs flex items-center justify-between hover:border-[#B8A499] transition">
+        <div class="bg-white rounded-xl p-3.5 border border-[#DDCFC2] shadow-sm flex items-center justify-between hover:border-[#B8A499] transition">
           <div class="flex items-center space-x-2 flex-1 min-w-0 pr-2">
             ${rankBadge}
             <div class="min-w-0 flex-1">
-              <div class="text-xs sm:text-sm font-bold font-mincho text-[#2D231E] tracking-tight truncate whitespace-nowrap">
+              <div class="text-sm sm:text-[15px] font-bold font-mincho text-[#2D231E] tracking-tight leading-relaxed">
                 ${plan.text}
               </div>
-              <div class="text-[9px] text-[#6E564B] flex items-center space-x-1 mt-0.5 whitespace-nowrap">
+              <div class="text-[11px] text-[#6E564B] flex items-center space-x-1 mt-1 whitespace-nowrap">
                 <span class="text-rose-500 font-bold">15文字</span>
                 <span>·</span>
                 <span class="truncate">by ${plan.author || '匿名希望'}</span>
@@ -484,7 +484,7 @@
           <!-- いいねボタン -->
           <button 
             onclick="window.toggleLikeHandler(${plan.id})" 
-            class="shrink-0 flex items-center space-x-1 px-2.5 py-1 rounded-full border transition active:scale-95 text-[11px] font-bold ${
+            class="shrink-0 flex items-center space-x-1 px-3 py-1.5 rounded-full border transition active:scale-95 text-xs font-bold ${
               isVoted 
                 ? 'bg-rose-50 border-rose-300 text-rose-600 shadow-xs' 
                 : 'bg-[#FAF5F2] border-[#DDCFC2] text-[#6E564B] hover:border-[#B8A499]'
