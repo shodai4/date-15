@@ -32,6 +32,8 @@
       background-size: 18px 18px;
       color: #382C26;
       -webkit-tap-highlight-color: transparent;
+      -webkit-font-smoothing: antialiased;
+      letter-spacing: 0.01em;
       /* 下（ホームインジケータ）の余白は本文側で1回だけ確保する。
          上（Dynamic Island / ノッチ）はヘッダー側で確保するので body では足さない。 */
       padding-bottom: env(safe-area-inset-bottom);
@@ -62,8 +64,8 @@
     .char-cell {
       width: 34px;
       height: 34px;
-      border: 1.5px solid #B8A499;
-      background-color: #FFFFFF;
+      border: 1.5px solid #C9B7A9;
+      background-color: #FFFDFB;
       transition: all 0.15s ease;
       display: flex;
       align-items: center;
@@ -241,7 +243,7 @@
       max-width: 344px;
       max-height: 100%;
       overflow-y: auto;
-      background: #FFFFFF;
+      background: #FFFDFB;
       border-radius: 20px;
       padding: 16px;
       box-shadow: 0 18px 40px rgba(45, 35, 30, 0.22);
@@ -287,11 +289,10 @@
   <main class="max-w-md w-full mx-auto px-3.5 py-3.5 flex-1 space-y-3.5">
 
     <!-- ① 今日のデートルーレット（一番上に配置＆高さをスリム化！） -->
-    <section data-date15-panel="roulette" class="bg-white rounded-2xl p-3 sm:p-3.5 border border-[#DDCFC2] shadow-xs relative overflow-hidden">
-      <div class="flex items-center justify-between mb-1.5">
+    <section data-date15-panel="roulette" class="bg-[#FFFDFB] rounded-2xl p-3.5 sm:p-4 border border-[#E6DAD0] shadow-[0_1px_2px_rgba(90,70,58,0.06)] relative overflow-hidden">
+      <div class="flex items-center justify-between mb-2">
         <div class="flex items-center space-x-1.5">
-          <span class="text-sm">🎲</span>
-          <h2 class="text-xs font-bold text-[#6E564B] tracking-wider uppercase whitespace-nowrap">ルーレット</h2>
+          <h2 class="text-[11px] font-bold text-[#7C6656] tracking-[0.14em] whitespace-nowrap">ルーレット</h2>
         </div>
         <span class="text-[10px] text-[#7C6656] bg-[#FAF5F2] px-2 py-0.5 rounded-full border border-[#DDCFC2] whitespace-nowrap">
           全 <span id="rouletteTotalCount" class="font-bold text-[#2D231E]">10</span> プラン
@@ -306,17 +307,16 @@
         <div id="rouletteAuthor" class="text-[11px] text-[#6E564B] mt-1 hidden whitespace-nowrap"></div>
       </div>
 
-      <!-- ルーレット起動ボタン -->
-      <div class="mt-2 flex gap-1.5">
-        <button id="btnSpinRoulette" class="flex-1 bg-gradient-to-r from-[#E26D6D] to-[#D65D5D] hover:opacity-95 active:scale-[0.98] text-white font-bold py-2.5 px-3 rounded-xl shadow-sm transition flex items-center justify-center space-x-1 text-[13px] tracking-wider whitespace-nowrap">
-          <span>🎲</span>
-          <span>今日のデートを決める！</span>
+      <!-- ルーレット起動ボタン（下部・片手で押せる高さ） -->
+      <div class="mt-2.5 flex gap-1.5">
+        <button id="btnSpinRoulette" class="flex-1 min-h-[46px] bg-gradient-to-r from-[#E26D6D] to-[#D65D5D] hover:opacity-95 active:scale-[0.98] text-white font-bold py-3 px-3 rounded-xl shadow-sm transition flex items-center justify-center text-[13px] tracking-wider whitespace-nowrap">
+          <span>今日のデートを決める</span>
         </button>
-        <button id="btnLikeRoulette" class="hidden bg-[#FAF5F2] hover:bg-[#EFE5DF] border border-[#B8A499] text-[#6E564B] font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center space-x-1 transition active:scale-95 whitespace-nowrap">
+        <button id="btnLikeRoulette" class="hidden min-h-[46px] w-12 bg-[#FAF5F2] hover:bg-[#EFE5DF] border border-[#D8C7BA] text-[#6E564B] font-bold py-2 px-0 rounded-xl text-xs flex items-center justify-center gap-0.5 transition active:scale-95 whitespace-nowrap">
           <span id="rouletteLikeHeart">🤍</span>
           <span id="rouletteLikeCount">0</span>
         </button>
-        <button id="btnShareRoulette" class="hidden bg-[#FAF5F2] hover:bg-[#EFE5DF] text-[#6E564B] border border-[#B8A499] font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center space-x-1 transition whitespace-nowrap">
+        <button id="btnShareRoulette" class="hidden min-h-[46px] bg-[#FAF5F2] hover:bg-[#EFE5DF] text-[#6E564B] border border-[#D8C7BA] font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center space-x-1 transition whitespace-nowrap">
           <span>𝕏</span>
           <span>シェア</span>
         </button>
@@ -324,11 +324,10 @@
     </section>
 
     <!-- ② 15文字ピッタリ投稿フォーム -->
-    <section data-date15-panel="post" class="bg-white rounded-2xl p-3.5 border border-[#DDCFC2] shadow-xs space-y-2.5">
-      <div class="flex items-center justify-between">
+    <section data-date15-panel="post" class="bg-[#FFFDFB] rounded-2xl p-4 border border-[#E6DAD0] shadow-[0_1px_2px_rgba(90,70,58,0.06)] space-y-3">
+      <div class="flex items-center justify-between gap-2">
         <div class="flex items-center space-x-1.5 min-w-0">
-          <span class="text-sm shrink-0">💌</span>
-          <h2 class="text-xs sm:text-sm font-bold text-[#2D231E] leading-tight">
+          <h2 class="text-xs sm:text-[13px] font-bold text-[#2D231E] leading-tight">
             <span class="inline-block whitespace-nowrap">ふたりの理想のデートを</span><span class="inline-block whitespace-nowrap">15文字で</span>
           </h2>
         </div>
@@ -359,7 +358,7 @@
             id="planInput" 
             maxlength="20" 
             placeholder="例: 古本屋で五百円分選び合ってみる" 
-            class="w-full px-3 py-2 bg-[#FAF5F2] border border-[#B8A499] rounded-xl text-xs text-[#2D231E] focus:outline-none focus:border-[#E26D6D] focus:bg-white transition placeholder-[#8C766B]"
+            class="w-full px-3.5 py-2.5 bg-[#FAF5F2] border border-[#D8C7BA] rounded-xl text-[13px] text-[#2D231E] focus:outline-none focus:border-[#E26D6D] focus:bg-white transition placeholder-[#8C766B]"
           >
           <button id="btnClearInput" class="absolute right-3 top-2 text-[#7C6656] hover:text-[#2D231E] text-xs hidden">
             ✕
@@ -374,42 +373,40 @@
             id="authorInput" 
             maxlength="12" 
             placeholder="お名前（未入力なら匿名希望）" 
-            class="flex-1 px-2.5 py-1.5 bg-[#FAF5F2] border border-[#B8A499] rounded-lg text-xs text-[#2D231E] focus:outline-none focus:border-[#E26D6D] focus:bg-white transition placeholder-[#8C766B]"
+            class="flex-1 px-3 py-2 bg-[#FAF5F2] border border-[#D8C7BA] rounded-lg text-xs text-[#2D231E] focus:outline-none focus:border-[#E26D6D] focus:bg-white transition placeholder-[#8C766B]"
           >
         </div>
 
-        <!-- 投稿ボタン -->
+        <!-- 投稿ボタン（下部・親指で押しやすい高さ） -->
         <button 
           id="btnSubmitPlan" 
           disabled 
-          class="w-full py-2.5 px-4 rounded-xl font-bold text-sm text-white bg-[#B8A499] cursor-not-allowed transition flex items-center justify-center space-x-1.5 shadow-xs"
+          class="w-full min-h-[48px] py-3 px-4 rounded-xl font-bold text-sm text-white bg-[#B8A499] cursor-not-allowed transition flex items-center justify-center shadow-xs"
         >
-          <span>📮</span>
-          <span>投稿</span>
+          <span>投稿する</span>
         </button>
       </div>
     </section>
 
     <!-- ③ みんなのデートプラン & いいねランキング -->
-    <section data-date15-panel="list" class="space-y-2">
+    <section data-date15-panel="list" class="space-y-2.5">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
         <div class="flex items-center space-x-1.5">
-          <span class="text-sm">🏆</span>
-          <h2 class="text-xs sm:text-sm font-bold text-[#2D231E] tracking-tight whitespace-nowrap">
+          <h2 class="text-xs sm:text-[13px] font-bold text-[#2D231E] tracking-tight whitespace-nowrap">
             デートプラン一覧
           </h2>
         </div>
 
         <!-- ソート切り替えタブ -->
         <div class="grid grid-cols-3 gap-1 bg-[#EFE5DF] p-1 rounded-xl text-[10.5px] w-full sm:w-auto">
-          <button id="sortLikes" class="py-1 rounded-lg font-bold bg-white text-[#2D231E] shadow-xs text-center whitespace-nowrap transition">
-            👍 人気順
+          <button id="sortLikes" class="min-h-[32px] py-1 rounded-lg font-bold bg-[#FFFDFB] text-[#2D231E] shadow-xs text-center whitespace-nowrap transition">
+            人気順
           </button>
-          <button id="sortNewest" class="py-1 rounded-lg text-[#6E564B] hover:text-[#2D231E] text-center whitespace-nowrap transition">
-            🌱 新着順
+          <button id="sortNewest" class="min-h-[32px] py-1 rounded-lg text-[#6E564B] hover:text-[#2D231E] text-center whitespace-nowrap transition">
+            新着順
           </button>
-          <button id="sortRandom" class="py-1 rounded-lg text-[#6E564B] hover:text-[#2D231E] text-center whitespace-nowrap transition">
-            🎲 ランダム
+          <button id="sortRandom" class="min-h-[32px] py-1 rounded-lg text-[#6E564B] hover:text-[#2D231E] text-center whitespace-nowrap transition">
+            ランダム
           </button>
         </div>
       </div>
@@ -515,8 +512,10 @@
   </div>
 
   <script src="config.js"></script>
-  <script src="admob.js?v=20261115v1"></script>
+  <script src="admob.js?v=20261121v1"></script>
+  <script src="ng-check.js?v=20261121v1"></script>
+  <script src="guard.js?v=20261121v1"></script>
   <script src="tabs.js?v=20261116v1"></script>
-  <script src="app.js?v=20261116v1"></script>
+  <script src="app.js?v=20261121v1"></script>
 </body>
 </html>

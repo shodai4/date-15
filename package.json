@@ -8,6 +8,8 @@
   "scripts": {
     "test": "node --test tests/",
     "build": "node scripts/build.js",
+    "ng:sql": "node scripts/generate-ng-sql.js",
+    "ng:sql:check": "node scripts/generate-ng-sql.js --check",
     "assets:generate": "python3 scripts/generate-assets.py",
     "cap:add": "npm run build && npx cap add ios && node scripts/configure-ios.js && node scripts/setup-ios-assets.js",
     "cap:sync": "npm run build && npx cap sync ios && node scripts/configure-ios.js && node scripts/setup-ios-assets.js",

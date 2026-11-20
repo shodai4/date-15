@@ -11,6 +11,8 @@ window.DATE_CONFIG = {
 
   // テーブル名
   TABLE_NAME: "date_plans",
+  // 通報の記録先（通報3件で自動非表示）
+  REPORT_TABLE_NAME: "date_plan_reports",
 
   /**
    * Google AdMob（画面下部の常時バナー広告）
@@ -30,12 +32,14 @@ window.DATE_CONFIG = {
    *   USE_TEST_ADS: false … App Store 提出ビルド。上記の本番バナーから本番広告を配信
    *
    *   本番IDのまま自分の広告を表示・クリックしてしまうと無効トラフィック扱いで
-   *   AdMob アカウントが停止され得るため、提出の合図があるまでは true のままにする。
+   *   AdMob アカウントが停止され得るため、収益化前の検証中は true に戻す。
+   *   ※ 2026-11-21: 荒らし対策とUI改善をあてた本番提出用ビルドのため false。
+   *     このビルドを TestFlight で自分で触るときは本番広告のタップを避けること。
    *   切り替えはこのファイルの1行だけでよく、admob.js は触らない。
    */
   ADMOB: {
     APP_ID: "ca-app-pub-5739782559889389~9293414856",
     BANNER_AD_ID: "ca-app-pub-5739782559889389/5354169841",
-    USE_TEST_ADS: true
+    USE_TEST_ADS: false
   }
 };
