@@ -746,3 +746,60 @@ test('main: 失敗時は Job Summary に理由を残す', async () => {
   }
   assert.match(fs.readFileSync(summaryPath, 'utf8'), /失敗/);
 });
+
+/* ------------------------------------------------------------------ *
+ * 7.1) VALID 直後に観測した 404（ビルドがまだ関連付け可能でない）
+ * ------------------------------------------------------------------ */
+
+const BUILD_404 = [
+  404,
+  {
+    errors: [
+      {
+        status: '404',
+        code: 'NOT_FOUND',
+        title: 'The specified resource does not exist',
+        detail: "There is no resource of type 'builds' with id 'B-1'",
+      },
+    ],
+  },
+];
+
+test('assignBuildToGroup: 404 は待って再試行し、通れば追加成功になる', async () => {
+  let attempt = 0;
+  const { fetchImpl, calls } = makeFetch([
+    {
+      match: 'POST /v1/betaGroups/G1/relationships/builds',
+      respond: () => {
+        attempt += 1;
+        return attempt < 3 ? BUILD_404 : 204;
+      },
+    },
+  ]);
+  const client = createAscClient({ jwtFactory: 'token', fetchImpl, sleep: async () => {}, maxRetries: 0 });
+  const waits = [];
+
+  const result = await assignBuildToGroup(client, {
+    groupId: 'G1',
+    buildId: 'B-1',
+    retries: 3,
+    delayMs: 8000,
+    sleep: async (ms) => waits.push(ms),
+  });
+
+  assert.deepEqual(result, { ok: true, mode: 'added' });
+  assert.equal(calls.length, 3, '3回目で成功する');
+  assert.deepEqual(waits, [8000, 8000], '再試行の前に待つ');
+});
+
+test('assignBuildToGroup: 404 が続くときは成功と偽らずに失敗する', async () => {
+  const { fetchImpl } = makeFetch([
+    { match: 'POST /v1/betaGroups/G1/relationships/builds', respond: BUILD_404 },
+  ]);
+  const client = createAscClient({ jwtFactory: 'token', fetchImpl, sleep: async () => {}, maxRetries: 0 });
+
+  await assert.rejects(
+    () => assignBuildToGroup(client, { groupId: 'G1', buildId: 'B-1', retries: 2, sleep: async () => {} }),
+    /グループへのビルド追加に失敗/,
+  );
+});

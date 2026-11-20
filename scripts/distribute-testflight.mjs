@@ -400,28 +400,51 @@ export async function fetchBetaGroups(client, appId) {
  * それも弾かれたら「自動配信に任せる（追加不要）」として成功扱いにする。
  * （内部グループは VALID になった時点で内部テスターへ配信される）
  */
-export async function assignBuildToGroup(client, { groupId, buildId, log = () => {} }) {
-  const result = await client.request('POST', `/betaGroups/${encodeURIComponent(groupId)}/relationships/builds`, {
-    body: { data: [{ type: 'builds', id: buildId }] },
-  });
-  if (result.status === 409) return { ok: true, mode: 'already_present' };
-  if (result.ok) return { ok: true, mode: 'added' };
+export async function assignBuildToGroup(client, {
+  groupId,
+  buildId,
+  log = () => {},
+  retries = 1,
+  delayMs = 8000,
+  sleep = defaultSleep,
+}) {
+  let lastReason = '';
 
-  const reason = describeApiError(result);
-  const internalGroupRefusal =
-    result.status === 422 && /internal/i.test(JSON.stringify(result.data || result.text || ''));
-
-  if (internalGroupRefusal) {
-    log(`[ASC] Apple が内部グループへの手動追加を拒否しました（${reason}）。逆向きの関連付けを試します`);
-    const reverse = await client.request('POST', `/builds/${encodeURIComponent(buildId)}/relationships/betaGroups`, {
-      body: { data: [{ type: 'betaGroups', id: groupId }] },
+  for (let attempt = 1; attempt <= Math.max(1, retries); attempt += 1) {
+    const result = await client.request('POST', `/betaGroups/${encodeURIComponent(groupId)}/relationships/builds`, {
+      body: { data: [{ type: 'builds', id: buildId }] },
     });
-    if (reverse.status === 409) return { ok: true, mode: 'already_present' };
-    if (reverse.ok) return { ok: true, mode: 'added' };
-    return { ok: true, mode: 'internal_auto', reason };
+    if (result.status === 409) return { ok: true, mode: 'already_present' };
+    if (result.ok) return { ok: true, mode: 'added' };
+
+    const reason = describeApiError(result);
+    lastReason = reason;
+    const internalGroupRefusal =
+      result.status === 422 && /internal/i.test(JSON.stringify(result.data || result.text || ''));
+
+    if (internalGroupRefusal) {
+      log(`[ASC] Apple が内部グループへの手動追加を拒否しました（${reason}）。逆向きの関連付けを試します`);
+      const reverse = await client.request('POST', `/builds/${encodeURIComponent(buildId)}/relationships/betaGroups`, {
+        body: { data: [{ type: 'betaGroups', id: groupId }] },
+      });
+      if (reverse.status === 409) return { ok: true, mode: 'already_present' };
+      if (reverse.ok) return { ok: true, mode: 'added' };
+      return { ok: true, mode: 'internal_auto', reason };
+    }
+
+    // VALID になった直後は、ビルドがまだ関連付け可能な状態になっておらず
+    // 404 NOT_FOUND（There is no resource of type 'builds'）が返ることがある。
+    // 数秒待つと通るので、指定回数だけ再試行する。
+    if (result.status === 404 && attempt < retries) {
+      log(`[ASC] ビルドがまだ関連付け可能ではありません（404）。${Math.round(delayMs / 1000)}秒後に再試行します（${attempt}/${retries}）`);
+      await sleep(delayMs);
+      continue;
+    }
+
+    throw new Error(`グループへのビルド追加に失敗: ${reason}`);
   }
 
-  throw new Error(`グループへのビルド追加に失敗: ${reason}`);
+  throw new Error(`グループへのビルド追加に失敗: ${lastReason}`);
 }
 
 /** 追加後にグループのビルド一覧を見て、本当に入っているか確認する（失敗しても致命にしない） */
@@ -529,7 +552,14 @@ export async function distributeBuild({
   }
 
   // (4) グループへ追加
-  const assigned = await assignBuildToGroup(client, { groupId: group.id, buildId: build.id, log });
+  const assigned = await assignBuildToGroup(client, {
+    groupId: group.id,
+    buildId: build.id,
+    log,
+    retries: 8,
+    delayMs: 8000,
+    sleep,
+  });
   if (assigned.mode === 'already_present') {
     log(`[ASC] ビルド ${buildNumber} はすでに「${group.name}」に入っていました（409 / 変更なし）`);
   } else if (assigned.mode === 'added') {
