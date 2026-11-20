@@ -86,10 +86,10 @@ begin
   -- 1) NFKC + 小文字化
   s := lower(normalize(p_text, NFKC));
 
-  -- 2) カタカナ（ァ U+30A1 〜 ヶ U+30F6）→ ひらがな
+  -- 2) カタカナ（ァ U+30A1 = 12449 〜 ヶ U+30F6 = 12534）→ ひらがな
   for i in 1..char_length(s) loop
     ch := substr(s, i, 1);
-    if ascii(ch) between 12353 and 12438 then
+    if ascii(ch) between 12449 and 12534 then
       out := out || chr(ascii(ch) - 96);
     else
       out := out || ch;
